@@ -1,6 +1,6 @@
 // C source code header -*- coding: utf-8 -*-
 // Created: [13.16:57 Январь 03 2014]
-// Modified: [02.39:18 Январь 06 2014]
+// Modified: [03.04:26 Январь 06 2014]
 // Description:
 // Author: Stanislav M. Ivankin
 // Email: lessgrep@gmail.com
@@ -37,10 +37,9 @@ int main(void)
     /* HW initialized */
     led_on(LED_ACTIVITY);
     bl_dbg("Bootloader started.");
-
     while (!usb_connect());
     led_on(LED_USB);
-
+    bl_dbg("USB connected.");
     bootloader();
 
     return 0;
@@ -52,7 +51,6 @@ static void __init(void)
     led_gpio_init();
     usart_gpio_init();
     usb_gpio_init();
-
     /* Pwr control clock */
 //    rcc_peripheral_enable_clock(&RCC_APB1ENR, RCC_APB1ENR_PWREN);
 }

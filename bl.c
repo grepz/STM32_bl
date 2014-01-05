@@ -125,19 +125,18 @@ void bootloader(void)
             break;
         case BL_PROTO_CMD_FLASH:
             bl_dbg("Flash command.");
-            if (__read_data(buf + 1, 2) == -1)
+            if (__read_data(buf + 1, 6) == -1)
                 continue;
 
-            if (crc8(buf, 2) != buf[2]) {
+            /* TODO: Check that addr is within boundaries */
+            if (crc8(buf, 6) != buf[6]) {
                 status = BL_PROTO_STATUS_CRCERR;
-//            } else if () /* Check that addr is within boundaries
-            } else
+            } else {
+                data_addr = buf[1];
                 status = BL_PROTO_STATUS_OK;
+            }
 
             __send_status(status);
-            if (status == BL_PROTO_STATUS_OK) {
-                data_addr = buf[1];
-            }
             break;
         case BL_PROTO_CMD_FLASH_DATA:
             bl_dbg("Flash data command.");
