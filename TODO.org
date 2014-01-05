@@ -1,0 +1,30 @@
+* I/O drivers [0%]
+  - [ ] USART DMA
+  - [ ] CDC/ACM interface
+  - [ ] Uploading files through I/O
+* Flash operations [0%]
+  - [ ] Flash read
+  - [ ] Flash write
+  - [ ] Flash erase
+* FAT32 ro driver [0%]
+  - [ ] fat32 read
+  - [ ] interface to download files
+  - [ ] interface to cat files
+* Bootloader functions [0%]
+  - [ ] Loading object files from flash or interface(CDCACM/USART)
+  - [ ] Flashing object files
+  - [ ] Booting specific object files
+
+* Protocol
+** Start
+   Client: Command word
+   Board: Reply code; Bootloader version; End Code; CRC
+** Flash start
+   Client: Command word, Addr, Size, crc
+   Board: Check if availible, erase, reply yes/no
+** Flash
+   Client: Data
+   Board: nothing
+** Flash end
+   Client: nothing
+   Board: Checking crc, replying successfull/not
