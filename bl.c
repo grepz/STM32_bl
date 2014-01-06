@@ -71,7 +71,7 @@ void bootloader(void)
 {
     int state = BL_STATE_NONE, status;
     uint8_t buf[128];
-    uint32_t data_addr = 0;
+    uint32_t data_addr = 0, data_size = 0;
     data_buf_t dbuf;
 
     for (;;) {
@@ -80,7 +80,7 @@ void bootloader(void)
         else
             led_on(LED_BL);
 
-        if (get_byte(buf, 100) == -1) {
+        if (get_byte(buf, 1000) == -1) {
             /* Check inactivity timer if no data present,
              * kill session if timeout
              */
@@ -125,14 +125,24 @@ void bootloader(void)
             break;
         case BL_PROTO_CMD_FLASH:
             bl_dbg("Flash command.");
-            if (__read_data(buf + 1, 6) == -1)
+            if (__read_data(buf + 1, 10) == -1)
                 continue;
 
             /* TODO: Check that addr is within boundaries */
-            if (crc8(buf, 6) != buf[6]) {
+            if (crc8(buf, 10) != buf[10]) {
                 status = BL_PROTO_STATUS_CRCERR;
             } else {
-                data_addr = buf[1];
+                /* Start address */
+                data_addr |= buf[1];
+                data_addr |= buf[2] << 8;
+                data_addr |= buf[3] << 16;
+                data_addr |= buf[4] << 24;
+                /* Data size */
+                data_size |= buf[5];
+                data_size |= buf[6] << 8;
+                data_size |= buf[7] << 16;
+                data_size |= buf[8] << 24;
+
                 status = BL_PROTO_STATUS_OK;
             }
 
@@ -152,6 +162,8 @@ void bootloader(void)
                 status = BL_PROTO_STATUS_OK;
 
             __send_status(status);
+
+            
 
             if (status == BL_PROTO_STATUS_OK) {
                 memset(&dbuf, 0, sizeof(dbuf));
@@ -228,6 +240,7 @@ static inline int __read_data(uint8_t *data, size_t sz)
 
     return 0;
 }
+
 #if 0
 static void do_jump(uint32_t stacktop, uint32_t entrypoint)
 {
