@@ -4,7 +4,11 @@
 #include <stdint.h>
 #include <libopencm3/stm32/f4/flash.h>
 
-#define STM32_BASE_ADDR 0x08000000
+#define STM32_BASE_ADDR  0x08000000
+
+#define BOARD_FLASH_SIZE (1024 * 1024)
+#define BL_SIZE          (16 * 1024)
+#define APP_SIZE_MAX     (BOARD_FLASH_SIZE - BL_SIZE)
 
 typedef union {
     uint8_t  b[256];

@@ -69,12 +69,11 @@ void jump_to_app(void)
 
 void bootloader(void)
 {
-    int ret;
     unsigned int i;
-    unsigned int start_sector, end_sector;
+    unsigned int ss, es;
     int state = BL_STATE_NONE, status;
     uint8_t buf[128];
-    uint32_t data_addr = 0, data_size = 0;
+    uint32_t daddr = 0, dsz = 0;
     data_buf_t dbuf;
 
     for (;;) {
@@ -131,33 +130,34 @@ void bootloader(void)
             if (__read_data(buf + 1, 10) == -1)
                 continue;
 
-            /* TODO: Check that addr is within boundaries */
             if (crc8(buf, 10) != buf[10]) {
                 status = BL_PROTO_STATUS_CRCERR;
             } else {
                 /* Start address */
-                data_addr |= buf[1];
-                data_addr |= buf[2] << 8;
-                data_addr |= buf[3] << 16;
-                data_addr |= buf[4] << 24;
-                /* Data size */
-                data_size |= buf[5];
-                data_size |= buf[6] << 8;
-                data_size |= buf[7] << 16;
-                data_size |= buf[8] << 24;
+                daddr |= buf[1];       daddr |= buf[2] << 8;
+                daddr |= buf[3] << 16; daddr |= buf[4] << 24;
+                daddr -= STM32_BASE_ADDR;
 
-                status = BL_PROTO_STATUS_OK;
+                /* Data size */
+                dsz |= buf[5];       dsz |= buf[6] << 8;
+                dsz |= buf[7] << 16; dsz |= buf[8] << 24;
+
+                /* Checking if we are in address boundaries */
+                if ((daddr + dsz) > APP_SIZE_MAX)
+                    status = BL_PROTO_STATUS_ARGERR;
+                else
+                    status = BL_PROTO_STATUS_OK;
             }
 
-            ret = bl_flash_get_sector_num(data_addr, data_size,
-                                          &start_sector, &end_sector);
-            i = 0;
-            if (ret != -1) {
+            if (status == BL_PROTO_STATUS_OK &&
+                bl_flash_get_sector_num(daddr, dsz, &ss, &es) != -1) {
+                i = ss;
+                flash_unlock();
                 do  {
                     bl_dbg("Erasing sector...");
                     bl_flash_erase_sector(i);
-                    i++;
-                } while (i < end_sector - start_sector);
+                } while (++i < (es - ss));
+                flash_lock();
             }
 
             __send_status(status);

@@ -5,9 +5,6 @@
 
 #include "flash.h"
 
-#define BOARD_FLASH_SIZE            (1024 * 1024)
-#define BOOTLOADER_RESERVATION_SIZE (16 * 1024)
-#define APP_SIZE_MAX (BOARD_FLASH_SIZE - BOOTLOADER_RESERVATION_SIZE)
 #define FLASH_PROGRAM_X32 (0x02 << 8)
 
 static const uint32_t __sector_size[] = {
@@ -54,7 +51,6 @@ uint32_t bl_flash_read_word(uint32_t address)
 
 int bl_flash_erase_sector(uint32_t sector)
 {
-//    uint8_t blank = 1;
     uint32_t size, i;
     uint32_t address = 0;
 
@@ -78,17 +74,22 @@ int bl_flash_get_sector_num(uint32_t addr, uint32_t sz,
                             unsigned int *s, unsigned int *e)
 {
     unsigned int i;
-    int start = -1, end = -1;
+    size_t sector = 0;
+    int start, end;
+
+    start = end = -1;
 
     for (i = 0; i < sizeof(__sector_size); i++) {
-        if (addr < __sector_size[i]) {
+        sector += __sector_size[i];
+        if (addr < sector) {
+            sector -= __sector_size[i];
             start = i;
             break;
         }
     }
-
     for (i = start; i < sizeof(__sector_size); i++) {
-        if ((addr + sz) < __sector_size[i]) {
+        sector += __sector_size[i];
+        if ((addr + sz) < sector) {
             end = i;
             break;
         }
