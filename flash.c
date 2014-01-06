@@ -73,3 +73,32 @@ int bl_flash_erase_sector(uint32_t sector)
 
     return 0;
 }
+
+int bl_flash_get_sector_num(uint32_t addr, uint32_t sz,
+                            unsigned int *s, unsigned int *e)
+{
+    unsigned int i;
+    int start = -1, end = -1;
+
+    for (i = 0; i < sizeof(__sector_size); i++) {
+        if (addr < __sector_size[i]) {
+            start = i;
+            break;
+        }
+    }
+
+    for (i = start; i < sizeof(__sector_size); i++) {
+        if ((addr + sz) < __sector_size[i]) {
+            end = i;
+            break;
+        }
+    }
+
+    if (start == -1 || end == -1)
+        return -1;
+
+    *s = start;
+    *e = end;
+
+    return 0;
+}

@@ -69,6 +69,9 @@ void jump_to_app(void)
 
 void bootloader(void)
 {
+    int ret;
+    unsigned int i;
+    unsigned int start_sector, end_sector;
     int state = BL_STATE_NONE, status;
     uint8_t buf[128];
     uint32_t data_addr = 0, data_size = 0;
@@ -146,6 +149,17 @@ void bootloader(void)
                 status = BL_PROTO_STATUS_OK;
             }
 
+            ret = bl_flash_get_sector_num(data_addr, data_size,
+                                          &start_sector, &end_sector);
+            i = 0;
+            if (ret != -1) {
+                do  {
+                    bl_dbg("Erasing sector...");
+                    bl_flash_erase_sector(i);
+                    i++;
+                } while (i < end_sector - start_sector);
+            }
+
             __send_status(status);
             break;
         case BL_PROTO_CMD_FLASH_DATA:
@@ -156,14 +170,13 @@ void bootloader(void)
             /* Checking CRC */
             if (crc8(buf, 3) != buf[3]) {
                 status = BL_PROTO_STATUS_CRCERR;
-            } else if (!buf[1] || (buf[1] + 1) % 4) { /* Thumb safe */
+            } else if (!buf[1] || (buf[1] + 1) % 4) {
+                /* Not thumb friendly */
                 status = BL_PROTO_STATUS_ARGERR;
             } else
                 status = BL_PROTO_STATUS_OK;
 
             __send_status(status);
-
-            
 
             if (status == BL_PROTO_STATUS_OK) {
                 memset(&dbuf, 0, sizeof(dbuf));
