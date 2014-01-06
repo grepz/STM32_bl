@@ -36,7 +36,7 @@ static inline void __send_data_crc32(uint32_t crc);
 static inline int __read_data(uint8_t *data, size_t sz);
 
 //static void do_jump(uint32_t stacktop, uint32_t entrypoint);
-#if 0
+
 void jump_to_app(void)
 {
     const uint32_t *app_base = (const uint32_t *)APP_LOAD_ADDRESS;
@@ -46,8 +46,6 @@ void jump_to_app(void)
         return;
     }
 
-    for (;;);
-
     usbd_stop();
     usart_stop();
 
@@ -55,8 +53,9 @@ void jump_to_app(void)
     systick_interrupt_disable();
     systick_counter_disable();
 
-    led_on(LED_BL);
+    led_off(LED_BL);
     led_off(LED_ACTIVITY);
+    led_off(LED_USB);
 
     SCB_VTOR = APP_LOAD_ADDRESS;
 //    SCB_VTOR = APP_LOAD_ADDRESS & 0x1FFFFF; /* Max 2 MByte Flash*/
@@ -65,7 +64,6 @@ void jump_to_app(void)
     /* Jump to application */
     (*(void(**)())(APP_LOAD_ADDRESS + 4))();
 }
-#endif
 
 void bootloader(void)
 {
@@ -78,9 +76,10 @@ void bootloader(void)
     uint32_t data_crc;
 
     for (;;) {
-        if (state == BL_STATE_NONE)
+        if (state == BL_STATE_NONE) {
+            daddr = dsz = caddr = csz = w = 0;
             led_off(LED_BL);
-        else
+        } else
             led_on(LED_BL);
 
         if (get_byte(buf, 1000) == -1) {
@@ -234,6 +233,7 @@ void bootloader(void)
                 }
 
                 __send_data_crc32(data_crc);
+                jump_to_app();
             } else
                 __send_data_crc32(0);
             break;
