@@ -3,7 +3,7 @@
 
 #include "usart.h"
 
-#define BL_TIMEOUT 5000
+#define BL_TIMEOUT 15000
 
 #define BL_PROTO_VER 0x1
 #define BL_PROTO_REV 0x1

@@ -137,11 +137,9 @@ void bootloader(void)
                 daddr |= buf[1];       daddr |= buf[2] << 8;
                 daddr |= buf[3] << 16; daddr |= buf[4] << 24;
                 daddr -= STM32_BASE_ADDR;
-
                 /* Data size */
                 dsz |= buf[5];       dsz |= buf[6] << 8;
                 dsz |= buf[7] << 16; dsz |= buf[8] << 24;
-
                 /* Checking if we are in address boundaries */
                 if ((daddr + dsz) > APP_SIZE_MAX)
                     status = BL_PROTO_STATUS_ARGERR;
@@ -164,26 +162,45 @@ void bootloader(void)
             break;
         case BL_PROTO_CMD_FLASH_DATA:
             bl_dbg("Flash data command.");
-            if (__read_data(buf + 1, 3) == -1)
-                continue;
-
-            /* Checking CRC */
-            if (crc8(buf, 3) != buf[3]) {
-                status = BL_PROTO_STATUS_CRCERR;
+            if (__read_data(buf + 1, 1) == -1) {
+                /* Failed reading data size argument */
+                status = BL_PROTO_STATUS_READERR;
             } else if (!buf[1] || (buf[1] + 1) % 4) {
-                /* Not thumb friendly */
+                /* Zero size or not word aligned */
                 status = BL_PROTO_STATUS_ARGERR;
-            } else
-                status = BL_PROTO_STATUS_OK;
-
-            __send_status(status);
-
-            if (status == BL_PROTO_STATUS_OK) {
+            } else {
+                /* Reset data buffer and read incoming data */
                 memset(&dbuf, 0, sizeof(dbuf));
-                __read_data(dbuf.b, buf[1] + 1);
-                /* TODO: Write data */
+                __read_data(dbuf.b, (unsigned int)buf[1] + 1);
+
+                if (__read_data(buf + 2, 2) == -1) {
+                    /* Failed reading command EOM and CRC8 bytes */
+                    status = BL_PROTO_STATUS_CRCERR;
+                } else {
+                    if (crc8(buf, 3) != buf[3]) {
+                        /* Command crc check failed */
+                        status = BL_PROTO_STATUS_CRCERR;
+                    } else {
+                        /* Starting to flash data */
+                        for (i = 0; i < ((unsigned int)buf[1]+1)/4; i++) {
+                            flash_unlock();
+                            bl_flash_write_word(daddr, dbuf.w[i]);
+                            flash_lock();
+                            if (bl_flash_read_word(daddr) != dbuf.w[i]) {
+                                /* I/O error */
+                                status = BL_PROTO_STATUS_IOERR;
+                                break;
+                            }
+
+                            daddr += 4;
+                        }
+
+                        status = BL_PROTO_STATUS_OK;
+                    }
+                }
             }
 
+            __send_status(status);
             break;
         case BL_PROTO_CMD_DATA_CRC:
             bl_dbg("CRC check command.");

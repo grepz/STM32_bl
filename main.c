@@ -1,6 +1,6 @@
 // C source code header -*- coding: utf-8 -*-
 // Created: [13.16:57 Январь 03 2014]
-// Modified: [03.04:26 Январь 06 2014]
+// Modified: [00.03:33 Январь 07 2014]
 // Description:
 // Author: Stanislav M. Ivankin
 // Email: lessgrep@gmail.com
@@ -24,6 +24,8 @@
 #include "usart.h"
 #include "bl.h"
 #include "timer.h"
+
+#include "pff/pff.h"
 
 static void __init(void);
 

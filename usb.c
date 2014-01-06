@@ -31,10 +31,13 @@ typedef struct cdcacm_func_descr {
     struct usb_cdc_union_descriptor cdc_union;
 } __attribute__((packed)) cdcacm_func_descr_t;
 
-static uint8_t __usbd_buf[512];
+#define USBD_BUF_LEN 512
+#define USB_RX_LEN   512
+
+static uint8_t __usbd_buf[USBD_BUF_LEN];
 static usbd_device *usbd;
 static unsigned head = 0, tail = 0;
-static uint8_t __usb_rx[512];
+static uint8_t __usb_rx[USB_RX_LEN];
 static const char *__usb_strings[] = {
     "Black Sphere Technologies", "Dummy terminal", "DEMO",
 };
@@ -231,7 +234,7 @@ int buf_get(void)
 void usb_msgsend(uint8_t *buf, size_t len)
 {
     while (len) {
-        unsigned int sz = (len > 128) ? 128 : len;
+        unsigned int sz = (len > 256) ? 256 : len;
         unsigned int sent;
 
         sent = usbd_ep_write_packet(usbd, 0x82, buf, sz);

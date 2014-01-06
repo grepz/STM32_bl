@@ -46,7 +46,12 @@ uint32_t bl_flash_read_word(uint32_t address)
     if (address & 3)
         return 0;
 
-    return *(uint32_t *)(address + APP_LOAD_ADDRESS);
+    return *(uint32_t *)(address + STM32_BASE_ADDR);
+}
+
+void bl_flash_write_word(uint32_t address, uint32_t word)
+{
+    flash_program_word(address + STM32_BASE_ADDR, word);
 }
 
 int bl_flash_erase_sector(uint32_t sector)

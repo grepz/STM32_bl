@@ -17,6 +17,7 @@ typedef union {
 
 inline uint32_t bl_flash_sector_size(uint32_t sector);
 inline uint32_t bl_flash_read_word(uint32_t address);
+void bl_flash_write_word(uint32_t address, uint32_t word);
 int bl_flash_erase_sector(uint32_t sector);
 int bl_flash_get_sector_num(uint32_t addr, uint32_t sz,
                             unsigned int *s, unsigned int *e);
