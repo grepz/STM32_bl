@@ -31,7 +31,7 @@ static uint8_t board_id[] = {0xFF, 0x11, 0xFF, 0x11};
 
 static inline void __send_handshake(void);
 static inline void __send_status(int status);
-static inline void __send_data_crc();
+static inline void __send_data_crc32(uint32_t crc);
 
 static inline int __read_data(uint8_t *data, size_t sz);
 
@@ -73,8 +73,9 @@ void bootloader(void)
     unsigned int ss, es;
     int state = BL_STATE_NONE, status;
     uint8_t buf[128];
-    uint32_t daddr = 0, dsz = 0;
+    uint32_t daddr = 0, dsz = 0, caddr, csz, w;
     data_buf_t dbuf;
+    uint32_t data_crc;
 
     for (;;) {
         if (state == BL_STATE_NONE)
@@ -127,10 +128,9 @@ void bootloader(void)
             break;
         case BL_PROTO_CMD_FLASH:
             bl_dbg("Flash command.");
-            if (__read_data(buf + 1, 10) == -1)
-                continue;
-
-            if (crc8(buf, 10) != buf[10]) {
+            if (__read_data(buf + 1, 10) == -1) {
+                status = BL_PROTO_STATUS_READERR;
+            } else if (crc8(buf, 10) != buf[10]) {
                 status = BL_PROTO_STATUS_CRCERR;
             } else {
                 /* Start address */
@@ -181,11 +181,10 @@ void bootloader(void)
                         /* Command crc check failed */
                         status = BL_PROTO_STATUS_CRCERR;
                     } else {
+                        flash_unlock();
                         /* Starting to flash data */
                         for (i = 0; i < ((unsigned int)buf[1]+1)/4; i++) {
-                            flash_unlock();
                             bl_flash_write_word(daddr, dbuf.w[i]);
-                            flash_lock();
                             if (bl_flash_read_word(daddr) != dbuf.w[i]) {
                                 /* I/O error */
                                 status = BL_PROTO_STATUS_IOERR;
@@ -194,6 +193,7 @@ void bootloader(void)
 
                             daddr += 4;
                         }
+                        flash_lock();
 
                         status = BL_PROTO_STATUS_OK;
                     }
@@ -204,8 +204,38 @@ void bootloader(void)
             break;
         case BL_PROTO_CMD_DATA_CRC:
             bl_dbg("CRC check command.");
-            /* TODO: Get CRC32 and send back */
-            __send_data_crc();
+            if (__read_data(buf + 1, 10) == -1) {
+                status = BL_PROTO_STATUS_READERR;
+            } else if (crc8(buf, 10) != buf[10]) {
+                status = BL_PROTO_STATUS_CRCERR;
+            } else {
+                caddr = csz = 0;
+                /* Start address */
+                caddr |= buf[1];       caddr |= buf[2] << 8;
+                caddr |= buf[3] << 16; caddr |= buf[4] << 24;
+                caddr -= STM32_BASE_ADDR;
+                /* Data size */
+                csz |= buf[5];       csz |= buf[6] << 8;
+                csz |= buf[7] << 16; csz |= buf[8] << 24;
+                if ((caddr + csz) > APP_SIZE_MAX) {
+                    /* TODO: Check address and size here */
+                    status = BL_PROTO_STATUS_ARGERR;
+                } else {
+                    status = BL_PROTO_STATUS_OK;
+                }
+            }
+
+            if (status == BL_PROTO_STATUS_OK) {
+                data_crc = 0;
+                for (i = 0; i < csz/4; i++) {
+                    w = bl_flash_read_word(caddr);
+                    data_crc = crc32((uint8_t *)&w, 4, data_crc);
+                    caddr += 4;
+                }
+
+                __send_data_crc32(data_crc);
+            } else
+                __send_data_crc32(0);
             break;
         case BL_PROTO_CMD_EOS:
             bl_dbg("EOS command.");
@@ -237,9 +267,8 @@ static inline void __send_handshake(void)
     usb_msgsend(msg, 9);
 }
 
-static inline void __send_data_crc()
+static inline void __send_data_crc32(uint32_t crc)
 {
-    uint32_t crc = 65536;
     uint8_t msg[6];
 
     msg[0] = crc & 0xFF;

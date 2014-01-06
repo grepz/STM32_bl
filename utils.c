@@ -98,9 +98,8 @@ inline uint8_t crc8(unsigned char *data, int len)
     return crc;
 }
 
-inline uint32_t crc32(const uint8_t *data, size_t len)
+inline uint32_t crc32(const uint8_t *data, size_t len, uint32_t crc)
 {
-    uint32_t crc = 0;
     uint8_t byte;
 
     while (len--) {
