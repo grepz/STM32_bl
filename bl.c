@@ -4,7 +4,6 @@
 #include <libopencm3/stm32/rcc.h>
 #include <libopencm3/stm32/gpio.h>
 #include <libopencm3/cm3/scb.h>
-#include <libopencm3/cm3/systick.h>
 
 #include "defs.h"
 
@@ -36,34 +35,6 @@ static inline void __send_data_crc32(uint32_t crc);
 static inline int __read_data(uint8_t *data, size_t sz);
 
 //static void do_jump(uint32_t stacktop, uint32_t entrypoint);
-
-void jump_to_app(void)
-{
-    const uint32_t *app_base = (const uint32_t *)APP_LOAD_ADDRESS;
-
-    if (app_base[0] == 0xffffffff) {
-        bl_dbg("App base address is empty.");
-        return;
-    }
-
-    usbd_stop();
-    usart_stop();
-
-    /* Disable all interrupts */
-    systick_interrupt_disable();
-    systick_counter_disable();
-
-    led_off(LED_BL);
-    led_off(LED_ACTIVITY);
-    led_off(LED_USB);
-
-    SCB_VTOR = APP_LOAD_ADDRESS;
-//    SCB_VTOR = APP_LOAD_ADDRESS & 0x1FFFFF; /* Max 2 MByte Flash*/
-    asm volatile ("msr msp, %0"::"g"
-                  (*(volatile uint32_t*)APP_LOAD_ADDRESS));
-    /* Jump to application */
-    (*(void(**)())(APP_LOAD_ADDRESS + 4))();
-}
 
 void bootloader(void)
 {
@@ -258,13 +229,21 @@ void bootloader(void)
 
 static inline void __send_handshake(void)
 {
+    uint8_t size[4];
+
+    size[0] = APP_SIZE_MAX & 0xFF;
+    size[1] = (APP_SIZE_MAX >> 8)  & 0xFF;
+    size[2] = (APP_SIZE_MAX >> 16) & 0xFF;
+    size[3] = (APP_SIZE_MAX >> 24) & 0xFF;
+
     uint8_t msg[] = {
         BL_PROTO_VER, BL_PROTO_REV,
         board_id[0], board_id[1], board_id[2], board_id[3],
-        0, BL_PROTO_EOM, 0};
-    msg[8] = crc8(msg, 8);
+        size[0], size[1], size[2], size[3],
+        BL_PROTO_EOM, 0};
 
-    usb_msgsend(msg, 9);
+    msg[11] = crc8(msg, 11);
+    usb_msgsend(msg, 12);
 }
 
 static inline void __send_data_crc32(uint32_t crc)
