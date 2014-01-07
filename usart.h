@@ -3,9 +3,6 @@
 
 #include <stdlib.h>
 
-#define BL_USART USART2
-#define BL_USART_RCC RCC_APB1ENR_USART2EN
-
 void usart_gpio_init(void);
 void usart_start(void);
 void usart_stop(void);

@@ -1,6 +1,6 @@
 // C source code header -*- coding: utf-8 -*-
 // Created: [13.16:57 Январь 03 2014]
-// Modified: [17.56:28 Январь 07 2014]
+// Modified: [20.24:13 Январь 07 2014]
 // Description:
 // Author: Stanislav M. Ivankin
 // Email: lessgrep@gmail.com
@@ -38,7 +38,8 @@ int main(void)
 
     /* HW initialized */
     led_on(LED_ACTIVITY);
-    bl_dbg("Bootloader started.");
+//    while (1)
+        bl_dbg("Bootloader started.");
     if (usb_connect()) {
         led_on(LED_USB);
         bl_dbg("USB connected.");

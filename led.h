@@ -1,13 +1,6 @@
 #ifndef __BL_LED_H
 #define __BL_LED_H
 
-#define BOARD_PORT_LEDS GPIOD
-
-#define BOARD_PIN_LED1 GPIO12
-#define BOARD_PIN_LED2 GPIO13
-#define BOARD_PIN_LED3 GPIO14
-#define BOARD_PIN_LED4 GPIO15
-
 #define BOARD_CLOCK_LEDS RCC_AHB1ENR_IOPDEN
 #define BOARD_LED_ON     gpio_set
 #define BOARD_LED_OFF    gpio_clear

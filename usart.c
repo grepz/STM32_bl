@@ -7,6 +7,8 @@
 
 #include <libopencm3/cm3/nvic.h>
 
+#include "board.h"
+
 #include "defs.h"
 
 #include "usart.h"
@@ -17,12 +19,15 @@ void usart_gpio_init(void)
     rcc_peripheral_enable_clock(&RCC_AHB1ENR, RCC_AHB1ENR_IOPAEN);
     rcc_peripheral_enable_clock(&RCC_APB1ENR, BL_USART_RCC);
 
-    gpio_mode_setup(GPIOA, GPIO_MODE_AF, GPIO_PUPD_NONE, GPIO2); /* Tx */
-    gpio_mode_setup(GPIOA, GPIO_MODE_AF, GPIO_PUPD_NONE, GPIO3); /* Rx */
-    gpio_set_output_options(GPIOA, GPIO_OTYPE_OD, GPIO_OSPEED_25MHZ, GPIO3);
+    gpio_mode_setup(SERIAL_TX_PORT, GPIO_MODE_AF,
+                    GPIO_PUPD_NONE, SERIAL_TX_PIN); /* Tx */
+    gpio_mode_setup(SERIAL_RX_PORT, GPIO_MODE_AF,
+                    GPIO_PUPD_NONE, SERIAL_RX_PIN); /* Rx */
+    gpio_set_output_options(SERIAL_RX_PORT, GPIO_OTYPE_OD,
+                            GPIO_OSPEED_25MHZ, SERIAL_RX_PIN);
 
-    gpio_set_af(GPIOA, GPIO_AF7, GPIO2);
-    gpio_set_af(GPIOA, GPIO_AF7, GPIO3);
+    gpio_set_af(SERIAL_TX_PORT, GPIO_AF7, SERIAL_TX_PIN);
+    gpio_set_af(SERIAL_RX_PORT, GPIO_AF7, SERIAL_RX_PIN);
 
 //    nvic_enable_irq(NVIC_USART2_IRQ);
 }
