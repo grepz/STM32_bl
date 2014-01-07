@@ -4,6 +4,7 @@
 #include <libopencm3/stm32/rcc.h>
 #include <libopencm3/stm32/gpio.h>
 #include <libopencm3/cm3/scb.h>
+#include <libopencm3/cm3/systick.h>
 
 #include "defs.h"
 
@@ -23,7 +24,7 @@ typedef enum {
     BL_STATE_FLASH,
     BL_STATE_FLASH_DATA,
     BL_STATE_DATA_CRC,
-    BL_STATE_EOS
+    BL_STATE_EOS,
 } bl_state_t;
 
 static uint8_t board_id[] = {0xFF, 0x11, 0xFF, 0x11};
@@ -35,7 +36,26 @@ static inline void __send_data_crc32(uint8_t status, uint32_t crc);
 static inline int __read_data(uint8_t *data, size_t sz);
 static inline int __read_and_check(uint8_t *data, size_t sz);
 
-//static void do_jump(uint32_t stacktop, uint32_t entrypoint);
+void jump_to_app(uint32_t new_addr)
+{
+    usbd_stop();
+    usart_stop();
+
+    /* Disable all interrupts */
+    systick_interrupt_disable();
+    systick_counter_disable();
+
+    led_off(LED_BL);
+    led_off(LED_ACTIVITY);
+    led_off(LED_USB);
+
+    SCB_VTOR = new_addr;
+//    SCB_VTOR = APP_LOAD_ADDRESS & 0x1FFFFF; /* Max 2 MByte Flash*/
+    asm volatile ("msr msp, %0"::"g"
+                  (*(volatile uint32_t*)new_addr));
+    /* Jump to application */
+    (*(void(**)())(new_addr + 4))();
+}
 
 void bootloader(void)
 {
@@ -43,13 +63,13 @@ void bootloader(void)
     unsigned int ss, es;
     int state = BL_STATE_NONE, status;
     uint8_t buf[128];
-    uint32_t daddr = 0, dsz = 0, caddr, csz, w;
+    uint32_t daddr = 0, dsz = 0, addr, csz, w;
     data_buf_t dbuf;
     uint32_t data_crc;
 
     for (;;) {
         if (state == BL_STATE_NONE) {
-            daddr = dsz = caddr = csz = w = 0;
+            daddr = dsz = addr = csz = w = 0;
             led_off(LED_BL);
         } else
             led_on(LED_BL);
@@ -169,29 +189,48 @@ void bootloader(void)
             data_crc = 0;
             status = __read_and_check(buf, 10);
             if (status == BL_PROTO_STATUS_OK) {
-                caddr = csz = 0;
+                addr = csz = 0;
                 /* Start address */
-                caddr |= buf[1];       caddr |= buf[2] << 8;
-                caddr |= buf[3] << 16; caddr |= buf[4] << 24;
-                caddr -= STM32_BASE_ADDR;
+                addr |= buf[1];       addr |= buf[2] << 8;
+                addr |= buf[3] << 16; addr |= buf[4] << 24;
+                addr -= STM32_BASE_ADDR;
                 /* Data size */
                 csz |= buf[5];       csz |= buf[6] << 8;
                 csz |= buf[7] << 16; csz |= buf[8] << 24;
-                if ((caddr + csz) > APP_SIZE_MAX) {
+                if ((addr + csz) > APP_SIZE_MAX) {
                     /* TODO: Check address and size here */
                     status = BL_PROTO_STATUS_ARGERR;
                 } else {
                     for (i = 0; i < csz/4; i++) {
-                        w = bl_flash_read_word(caddr);
+                        w = bl_flash_read_word(addr);
                         data_crc = crc32((uint8_t *)&w, 4, data_crc);
-                        caddr += 4;
+                        addr += 4;
                     }
                     status = BL_PROTO_STATUS_OK;
                 }
             }
 
             __send_data_crc32(status, data_crc);
-//            jump_to_app();
+            break;
+        case BL_PROTO_CMD_BOOT:
+            bl_dbg("Boot command.");
+            status = __read_and_check(buf, 6);
+            if (status == BL_PROTO_STATUS_OK) {
+                /* TODO: Check addr here */
+                addr = 0;
+                addr |= buf[1];       addr |= buf[2] << 8;
+                addr |= buf[3] << 16; addr |= buf[4] << 24;
+            }
+
+            if (((const uint32_t *)addr)[0] == 0xffffffff)
+                status = BL_PROTO_STATUS_ARGERR;
+
+            __send_status(status);
+
+            if (status == BL_PROTO_STATUS_OK) {
+                bl_dbg("Jumping to new address.");
+                jump_to_app(addr);
+            }
             break;
         case BL_PROTO_CMD_EOS:
             bl_dbg("EOS command.");

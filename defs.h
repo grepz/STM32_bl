@@ -5,9 +5,6 @@
 
 #define BL_TIMEOUT 15000
 
-#define BL_PROTO_VER 0x1
-#define BL_PROTO_REV 0x1
-
 #ifdef BLDEBUG
 #define bl_dbg(msg) print(msg"\r\n")
 #else
