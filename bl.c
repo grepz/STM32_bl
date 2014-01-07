@@ -30,9 +30,10 @@ static uint8_t board_id[] = {0xFF, 0x11, 0xFF, 0x11};
 
 static inline void __send_handshake(void);
 static inline void __send_status(int status);
-static inline void __send_data_crc32(uint32_t crc);
+static inline void __send_data_crc32(uint8_t status, uint32_t crc);
 
 static inline int __read_data(uint8_t *data, size_t sz);
+static inline int __read_and_check(uint8_t *data, size_t sz);
 
 //static void do_jump(uint32_t stacktop, uint32_t entrypoint);
 
@@ -67,14 +68,14 @@ void bootloader(void)
 
         if (state == BL_STATE_NONE) {
             led_off(LED_BL);
-            if (*buf != BL_PROTO_CMD_HANDSHAKE || /* Waiting for handshake */
-                __read_data(buf + 1, 2) == -1  || /* 3 bytes */
-                crc8(buf, 2) != buf[2]) {         /* Checking CRC */
+            /* Waiting for handshake */
+            if (*buf != BL_PROTO_CMD_HANDSHAKE ||
+                __read_and_check(buf, 2) != BL_PROTO_STATUS_OK) {
                 continue;
             }
 
-            __send_handshake();
             bl_dbg("Handshaking.");
+            __send_handshake();
             state = BL_STATE_SESSION;
             continue;
         }
@@ -82,27 +83,19 @@ void bootloader(void)
         switch (*buf) {
         case BL_PROTO_CMD_ERASE:
             bl_dbg("Erase command.");
-            if (__read_data(buf + 1, 3) == -1)
-                continue;
-
-            if (crc8(buf, 3) != buf[3]) {
-                status = BL_PROTO_STATUS_CRCERR;
-            } else {
+            status = __read_and_check(buf, 3);
+            if (status == BL_PROTO_STATUS_OK) {
                 flash_unlock();
                 bl_flash_erase_sector(buf[1]);
                 flash_lock();
-                status = BL_PROTO_STATUS_OK;
             }
 
             __send_status(status);
             break;
         case BL_PROTO_CMD_FLASH:
             bl_dbg("Flash command.");
-            if (__read_data(buf + 1, 10) == -1) {
-                status = BL_PROTO_STATUS_READERR;
-            } else if (crc8(buf, 10) != buf[10]) {
-                status = BL_PROTO_STATUS_CRCERR;
-            } else {
+            status = __read_and_check(buf, 10);
+            if (status == BL_PROTO_STATUS_OK) {
                 /* Start address */
                 daddr |= buf[1];       daddr |= buf[2] << 8;
                 daddr |= buf[3] << 16; daddr |= buf[4] << 24;
@@ -111,21 +104,20 @@ void bootloader(void)
                 dsz |= buf[5];       dsz |= buf[6] << 8;
                 dsz |= buf[7] << 16; dsz |= buf[8] << 24;
                 /* Checking if we are in address boundaries */
-                if ((daddr + dsz) > APP_SIZE_MAX)
-                    status = BL_PROTO_STATUS_ARGERR;
-                else
-                    status = BL_PROTO_STATUS_OK;
-            }
+                if ((daddr + dsz) <= APP_SIZE_MAX &&
+                    bl_flash_get_sector_num(daddr, dsz, &ss, &es) != -1) {
+                    i = ss;
+                    flash_unlock();
+                    do  {
+                        bl_dbg("Erasing sector...");
+                        bl_flash_erase_sector(i);
+                    } while (++i < (es - ss));
+                    flash_lock();
 
-            if (status == BL_PROTO_STATUS_OK &&
-                bl_flash_get_sector_num(daddr, dsz, &ss, &es) != -1) {
-                i = ss;
-                flash_unlock();
-                do  {
-                    bl_dbg("Erasing sector...");
-                    bl_flash_erase_sector(i);
-                } while (++i < (es - ss));
-                flash_lock();
+                    status = BL_PROTO_STATUS_OK;
+                } else {
+                    status = BL_PROTO_STATUS_ARGERR;
+                }
             }
 
             __send_status(status);
@@ -174,11 +166,9 @@ void bootloader(void)
             break;
         case BL_PROTO_CMD_DATA_CRC:
             bl_dbg("CRC check command.");
-            if (__read_data(buf + 1, 10) == -1) {
-                status = BL_PROTO_STATUS_READERR;
-            } else if (crc8(buf, 10) != buf[10]) {
-                status = BL_PROTO_STATUS_CRCERR;
-            } else {
+            data_crc = 0;
+            status = __read_and_check(buf, 10);
+            if (status == BL_PROTO_STATUS_OK) {
                 caddr = csz = 0;
                 /* Start address */
                 caddr |= buf[1];       caddr |= buf[2] << 8;
@@ -191,41 +181,60 @@ void bootloader(void)
                     /* TODO: Check address and size here */
                     status = BL_PROTO_STATUS_ARGERR;
                 } else {
+                    for (i = 0; i < csz/4; i++) {
+                        w = bl_flash_read_word(caddr);
+                        data_crc = crc32((uint8_t *)&w, 4, data_crc);
+                        caddr += 4;
+                    }
                     status = BL_PROTO_STATUS_OK;
                 }
             }
 
-            if (status == BL_PROTO_STATUS_OK) {
-                data_crc = 0;
-                for (i = 0; i < csz/4; i++) {
-                    w = bl_flash_read_word(caddr);
-                    data_crc = crc32((uint8_t *)&w, 4, data_crc);
-                    caddr += 4;
-                }
-
-                __send_data_crc32(data_crc);
-                jump_to_app();
-            } else
-                __send_data_crc32(0);
+            __send_data_crc32(status, data_crc);
+//            jump_to_app();
             break;
         case BL_PROTO_CMD_EOS:
             bl_dbg("EOS command.");
-            if (__read_data(buf + 1, 2) == -1)
-                continue;
-
-            if (crc8(buf, 2) != buf[2]) {
-                status = BL_PROTO_STATUS_CRCERR;
-            } else
-                status = BL_PROTO_STATUS_OK;
-
+            status = __read_and_check(buf, 2);
             __send_status(status);
             if (status == BL_PROTO_STATUS_OK)
                 state = BL_STATE_NONE;
+
             break;
         }
     }
 }
 
+static inline int __read_data(uint8_t *data, size_t sz)
+{
+    while (sz--) {
+        if (get_byte(data, 1000) == -1)
+            return -1;
+        data++;
+    }
+
+    return 0;
+}
+
+static inline int __read_and_check(uint8_t *data, size_t sz)
+{
+    int ret = -1;
+    uint8_t *ptr = (data + 1);
+    size_t len = sz;
+
+    while (len--) {
+        ret = get_byte(ptr, 1000);
+        if (ret == -1) break;
+        ptr++;
+    }
+
+    if (ret == -1)
+        return BL_PROTO_STATUS_IOERR;
+    else if (crc8(data, sz) != data[sz])
+        return BL_PROTO_STATUS_CRCERR;
+
+    return BL_PROTO_STATUS_OK;
+}
 
 static inline void __send_handshake(void)
 {
@@ -246,18 +255,19 @@ static inline void __send_handshake(void)
     usb_msgsend(msg, 12);
 }
 
-static inline void __send_data_crc32(uint32_t crc)
+static inline void __send_data_crc32(uint8_t status, uint32_t crc)
 {
-    uint8_t msg[6];
+    uint8_t msg[7];
 
-    msg[0] = crc & 0xFF;
-    msg[1] = (crc >> 8) & 0xFF;
-    msg[2] = (crc >> 16) & 0xFF;
-    msg[3] = (crc >> 24) & 0xFF;
-    msg[4] = BL_PROTO_EOM;
-    msg[5] = crc8(msg, 5);
+    msg[0] = status;
+    msg[1] = crc & 0xFF;
+    msg[2] = (crc >> 8) & 0xFF;
+    msg[3] = (crc >> 16) & 0xFF;
+    msg[4] = (crc >> 24) & 0xFF;
+    msg[5] = BL_PROTO_EOM;
+    msg[6] = crc8(msg, 6);
 
-    usb_msgsend(msg, 6);
+    usb_msgsend(msg, 7);
 }
 
 static inline void __send_status(int status)
@@ -266,17 +276,6 @@ static inline void __send_status(int status)
     msg[2] = crc8(msg, 2);
 
     usb_msgsend(msg, 3);
-}
-
-static inline int __read_data(uint8_t *data, size_t sz)
-{
-    while (sz--) {
-        if (get_byte(data, 1000) == -1)
-            return -1;
-        data++;
-    }
-
-    return 0;
 }
 
 #if 0
