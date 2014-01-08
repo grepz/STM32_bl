@@ -16,9 +16,6 @@
 
 void usart_gpio_init(void)
 {
-    rcc_peripheral_enable_clock(&RCC_AHB1ENR, RCC_AHB1ENR_IOPAEN);
-    rcc_peripheral_enable_clock(&RCC_APB1ENR, BL_USART_RCC);
-
     gpio_mode_setup(SERIAL_TX_PORT, GPIO_MODE_AF,
                     GPIO_PUPD_NONE, SERIAL_TX_PIN); /* Tx */
     gpio_mode_setup(SERIAL_RX_PORT, GPIO_MODE_AF,
@@ -26,10 +23,8 @@ void usart_gpio_init(void)
     gpio_set_output_options(SERIAL_RX_PORT, GPIO_OTYPE_OD,
                             GPIO_OSPEED_25MHZ, SERIAL_RX_PIN);
 
-    gpio_set_af(SERIAL_TX_PORT, GPIO_AF7, SERIAL_TX_PIN);
-    gpio_set_af(SERIAL_RX_PORT, GPIO_AF7, SERIAL_RX_PIN);
-
-//    nvic_enable_irq(NVIC_USART2_IRQ);
+    gpio_set_af(SERIAL_TX_PORT, USART_AF, SERIAL_TX_PIN);
+    gpio_set_af(SERIAL_RX_PORT, USART_AF, SERIAL_RX_PIN);
 }
 
 void usart_start(void)
@@ -42,14 +37,11 @@ void usart_start(void)
     usart_set_parity(BL_USART, USART_PARITY_NONE);
     usart_set_flow_control(BL_USART, USART_FLOWCONTROL_NONE);
 
-    /* Enable interrupts */
-//    usart_enable_rx_interrupt(USART2);
     usart_enable(BL_USART);
 }
 
 void usart_stop(void)
 {
-//    usart_disable_rx_interrupt(USART2);
     usart_disable(BL_USART);
 }
 

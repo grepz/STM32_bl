@@ -39,7 +39,9 @@ static usbd_device *usbd;
 static unsigned head = 0, tail = 0;
 static uint8_t __usb_rx[USB_RX_LEN];
 static const char *__usb_strings[] = {
-    "Black Sphere Technologies", "Dummy terminal", "DEMO",
+    "SapTech",
+    "TR",
+    "CTRL",
 };
 
 static const cdcacm_func_descr_t __cdc_fdescr = {
@@ -173,7 +175,7 @@ static const struct usb_config_descriptor __usbconf_desc = {
     .interface           = __usb_ifaces,
 };
 
-
+#if 0
 void usb_gpio_init(void)
 {
     /* GPIO9 to sniff VBUS */
@@ -188,12 +190,19 @@ void usb_gpio_init(void)
                     GPIO9 | GPIO11 | GPIO12);
     gpio_set_af(GPIOA, GPIO_AF10, GPIO9 | GPIO11 | GPIO12);
 }
+#endif
+
+void usb_gpio_init(void)
+{
+    gpio_mode_setup(GPIOA, GPIO_MODE_INPUT, GPIO_PUPD_NONE, GPIO9);
+    gpio_mode_setup(GPIOA, GPIO_MODE_AF, GPIO_PUPD_NONE, GPIO10|GPIO11|GPIO12);
+    gpio_set_af(GPIOA, GPIO_AF10, GPIO10|GPIO11|GPIO12);
+}
 
 int usbd_create(void)
 {
     usbd = usbd_init(&otgfs_usb_driver, &__usbdev_desc, &__usbconf_desc,
-                     __usb_strings, 3, __usbd_buf,
-                     sizeof(__usbd_buf));
+                     __usb_strings, 3, __usbd_buf, sizeof(__usbd_buf));
     if (!usbd)
         return -1;
 

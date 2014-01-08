@@ -13,16 +13,16 @@ void led_on(unsigned led)
 {
     switch (led) {
     case 0:
-        BOARD_LED_ON(BOARD_PORT_LEDS, BOARD_PIN_LED1);
+        BOARD_LED_ON(BL_LEDS_PORT, BL_LED1_PIN);
         break;
     case 1:
-        BOARD_LED_ON(BOARD_PORT_LEDS, BOARD_PIN_LED2);
+        BOARD_LED_ON(BL_LEDS_PORT, BL_LED2_PIN);
         break;
     case 2:
-        BOARD_LED_ON(BOARD_PORT_LEDS, BOARD_PIN_LED3);
+        BOARD_LED_ON(BL_LEDS_PORT, BL_LED3_PIN);
         break;
     case 3:
-        BOARD_LED_ON(BOARD_PORT_LEDS, BOARD_PIN_LED4);
+        BOARD_LED_ON(BL_LEDS_PORT, BL_LED4_PIN);
         break;
     }
 }
@@ -31,16 +31,16 @@ void led_off(unsigned led)
 {
     switch (led) {
     case 0:
-        BOARD_LED_OFF(BOARD_PORT_LEDS, BOARD_PIN_LED1);
+        BOARD_LED_OFF(BL_LEDS_PORT, BL_LED1_PIN);
         break;
     case 1:
-        BOARD_LED_OFF(BOARD_PORT_LEDS, BOARD_PIN_LED2);
+        BOARD_LED_OFF(BL_LEDS_PORT, BL_LED2_PIN);
         break;
     case 2:
-        BOARD_LED_OFF(BOARD_PORT_LEDS, BOARD_PIN_LED3);
+        BOARD_LED_OFF(BL_LEDS_PORT, BL_LED3_PIN);
         break;
     case 3:
-        BOARD_LED_OFF(BOARD_PORT_LEDS, BOARD_PIN_LED4);
+        BOARD_LED_OFF(BL_LEDS_PORT, BL_LED4_PIN);
         break;
     }
 }
@@ -49,26 +49,25 @@ void led_toggle(unsigned led)
 {
     switch (led) {
     case 0:
-        gpio_toggle(BOARD_PORT_LEDS, BOARD_PIN_LED1);
+        gpio_toggle(BL_LEDS_PORT, BL_LED1_PIN);
         break;
     case 1:
-        gpio_toggle(BOARD_PORT_LEDS, BOARD_PIN_LED2);
+        gpio_toggle(BL_LEDS_PORT, BL_LED2_PIN);
         break;
     case 2:
-        gpio_toggle(BOARD_PORT_LEDS, BOARD_PIN_LED3);
+        gpio_toggle(BL_LEDS_PORT, BL_LED3_PIN);
         break;
     case 3:
-        gpio_toggle(BOARD_PORT_LEDS, BOARD_PIN_LED4);
+        gpio_toggle(BL_LEDS_PORT, BL_LED4_PIN);
         break;
     }
 }
 
 void led_gpio_init(void)
 {
-    rcc_peripheral_enable_clock(&RCC_AHB1ENR, BOARD_CLOCK_LEDS);
-    gpio_mode_setup(BOARD_PORT_LEDS, GPIO_MODE_OUTPUT, GPIO_PUPD_PULLDOWN,
-                    BOARD_PIN_LED1 | BOARD_PIN_LED2 |
-                    BOARD_PIN_LED3 | BOARD_PIN_LED4);
+    gpio_mode_setup(BL_LEDS_PORT, GPIO_MODE_OUTPUT, GPIO_PUPD_PULLDOWN,
+                    BL_LED1_PIN | BL_LED2_PIN |
+                    BL_LED3_PIN | BL_LED4_PIN);
 }
 
 inline void led_blink(unsigned int type, unsigned int state)

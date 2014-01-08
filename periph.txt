@@ -1,0 +1,73 @@
+void rcc_enable_ahb1(void)
+{
+    rcc_peripheral_enable_clock(&RCC_AHB1ENR, RCC_AHB1ENR_IOPAEN);
+//    rcc_peripheral_enable_clock(&RCC_AHB1ENR, RCC_AHB1ENR_IOPBEN);
+//    rcc_peripheral_enable_clock(&RCC_AHB1ENR, RCC_AHB1ENR_IOPCEN);
+//    rcc_peripheral_enable_clock(&RCC_AHB1ENR, RCC_AHB1ENR_IOPDEN);
+//    rcc_peripheral_enable_clock(&RCC_AHB1ENR, RCC_AHB1ENR_IOPEEN);
+//    rcc_peripheral_enable_clock(&RCC_AHB1ENR, RCC_AHB1ENR_IOPFEN);
+//    rcc_peripheral_enable_clock(&RCC_AHB1ENR, RCC_AHB1ENR_IOPGEN);
+//    rcc_peripheral_enable_clock(&RCC_AHB1ENR, RCC_AHB1ENR_IOPHEN);
+//    rcc_peripheral_enable_clock(&RCC_AHB1ENR, RCC_AHB1ENR_IOPIEN);
+
+//    rcc_peripheral_enable_clock(&RCC_AHB1ENR, RCC_AHB1ENR_CRCEN);
+//    rcc_peripheral_enable_clock(&RCC_AHB1ENR, RCC_AHB1ENR_BKPSRAMEN);
+//    rcc_peripheral_enable_clock(&RCC_AHB1ENR, RCC_AHB1ENR_CCMDATARAMEN);
+//    rcc_peripheral_enable_clock(&RCC_AHB1ENR, RCC_AHB1ENR_DMA1EN);
+//    rcc_peripheral_enable_clock(&RCC_AHB1ENR, RCC_AHB1ENR_DMA2EN);
+//    rcc_peripheral_enable_clock(&RCC_AHB1ENR, RCC_AHB1ENR_OTGHSEN);
+//    rcc_peripheral_enable_clock(&RCC_AHB1ENR, RCC_AHB1ENR_OTGHSULPIEN);
+}
+
+void rcc_enable_ahb2(void)
+{
+    rcc_peripheral_enable_clock(&RCC_AHB2ENR, RCC_AHB2ENR_OTGFSEN);
+}
+
+void rcc_enable_ahb3(void)
+{
+    rcc_peripheral_enable_clock(&RCC_AHB3ENR, RCC_AHB3ENR_FSMCEN);
+}
+
+void rcc_enable_apb1(void)
+{
+    /*
+    rcc_peripheral_enable_clock(&RCC_APB1ENR, RCC_APB1ENR_TIM2EN);
+    rcc_peripheral_enable_clock(&RCC_APB1ENR, RCC_APB1ENR_TIM3EN);
+    rcc_peripheral_enable_clock(&RCC_APB1ENR, RCC_APB1ENR_TIM4EN);
+    rcc_peripheral_enable_clock(&RCC_APB1ENR, RCC_APB1ENR_TIM5EN);
+    rcc_peripheral_enable_clock(&RCC_APB1ENR, RCC_APB1ENR_TIM6EN);
+    rcc_peripheral_enable_clock(&RCC_APB1ENR, RCC_APB1ENR_TIM7EN);
+    rcc_peripheral_enable_clock(&RCC_APB1ENR, RCC_APB1ENR_TIM12EN);
+    rcc_peripheral_enable_clock(&RCC_APB1ENR, RCC_APB1ENR_TIM13EN);
+    rcc_peripheral_enable_clock(&RCC_APB1ENR, RCC_APB1ENR_TIM14EN);
+    rcc_peripheral_enable_clock(&RCC_APB1ENR, RCC_APB1ENR_WWDGEN);
+    rcc_peripheral_enable_clock(&RCC_APB1ENR, RCC_APB1ENR_SPI2EN);
+    rcc_peripheral_enable_clock(&RCC_APB1ENR, RCC_APB1ENR_SPI3EN);
+    rcc_peripheral_enable_clock(&RCC_APB1ENR, RCC_APB1ENR_TIM2EN);
+    */
+}
+
+void rcc_enable_apb2(void)
+{
+    /*
+    rcc_peripheral_enable_clock(&RCC_APB2ENR, RCC_APB2ENR_TIM11EN);
+    rcc_peripheral_enable_clock(&RCC_APB2ENR, RCC_APB2ENR_TIM8EN);
+    rcc_peripheral_enable_clock(&RCC_APB2ENR, RCC_APB2ENR_USART6EN);
+    rcc_peripheral_enable_clock(&RCC_APB2ENR, RCC_APB2ENR_SDIOEN);
+    rcc_peripheral_enable_clock(&RCC_APB2ENR, RCC_APB2ENR_SPI1EN);
+    rcc_peripheral_enable_clock(&RCC_APB2ENR, RCC_APB2ENR_SYSCFGEN);
+    rcc_peripheral_enable_clock(&RCC_APB2ENR, RCC_APB2ENR_TIM9EN);
+    rcc_peripheral_enable_clock(&RCC_APB2ENR, RCC_APB2ENR_TIM10EN);
+    rcc_peripheral_enable_clock(&RCC_APB2ENR, RCC_APB2ENR_TIM11EN);
+    */
+}
+
+void rcc_enable_periph(void)
+{
+    rcc_enable_ahb1();
+    rcc_enable_ahb2();
+    rcc_enable_ahb3();
+    rcc_enable_apb1();
+    rcc_enable_apb2();
+}

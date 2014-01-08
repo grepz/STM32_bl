@@ -41,6 +41,8 @@ void jump_to_app(uint32_t new_addr)
     usbd_stop();
     usart_stop();
 
+    rcc_disable();
+
     /* Disable all interrupts */
     systick_interrupt_disable();
     systick_counter_disable();
@@ -143,7 +145,6 @@ void bootloader(void)
             __send_status(status);
             break;
         case BL_PROTO_CMD_FLASH_DATA:
-            bl_dbg("Flash data command.");
             if (__read_data(buf + 1, 1) == -1) {
                 /* Failed reading data size argument */
                 status = BL_PROTO_STATUS_READERR;
@@ -163,6 +164,7 @@ void bootloader(void)
                         /* Command crc check failed */
                         status = BL_PROTO_STATUS_CRCERR;
                     } else {
+                        print(".");
                         flash_unlock();
                         /* Starting to flash data */
                         for (i = 0; i < ((unsigned int)buf[1]+1)/4; i++) {

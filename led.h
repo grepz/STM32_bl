@@ -1,7 +1,6 @@
 #ifndef __BL_LED_H
 #define __BL_LED_H
 
-#define BOARD_CLOCK_LEDS RCC_AHB1ENR_IOPDEN
 #define BOARD_LED_ON     gpio_set
 #define BOARD_LED_OFF    gpio_clear
 
