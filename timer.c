@@ -25,7 +25,7 @@ void sys_tick_handler(void)
     }
 }
 
-void delay(unsigned msec)
+void wait(unsigned msec)
 {
     timer[TIMER_DELAY] = msec;
     while(timer[TIMER_DELAY] > 0);
@@ -40,12 +40,12 @@ void timers_init(void)
     systick_counter_enable();
 }
 
-inline void set_timer(timer_t tim, unsigned int msec)
+inline void set_timer(bl_timer_t tim, unsigned int msec)
 {
     timer[tim] = msec;
 }
 
-inline unsigned int check_timer(timer_t tim)
+inline unsigned int check_timer(bl_timer_t tim)
 {
     return timer[tim];
 }

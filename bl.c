@@ -1,5 +1,7 @@
 #include <stdlib.h>
+#include <stdio.h>
 #include <string.h>
+#include <stdint.h>
 
 #include <libopencm3/stm32/rcc.h>
 #include <libopencm3/stm32/gpio.h>
@@ -7,6 +9,8 @@
 #include <libopencm3/cm3/systick.h>
 
 #include "defs.h"
+
+#include "init.h"
 
 #include "bl.h"
 #include "usart.h"
@@ -16,6 +20,8 @@
 #include "timer.h"
 #include "flash.h"
 #include "utils.h"
+#include "spi.h"
+#include "at45db.h"
 
 typedef enum {
     BL_STATE_NONE,
@@ -27,6 +33,8 @@ typedef enum {
     BL_STATE_EOS,
 } bl_state_t;
 
+
+//static uint32_t bl_magic[] = {0xFA581E67, 0x31CA4F97, 0xB5A51CBB, 0xB53E5F0A};
 static uint8_t board_id[] = {0xFF, 0x11, 0xFF, 0x11};
 
 static inline void __send_handshake(void);
@@ -38,24 +46,26 @@ static inline int __read_and_check(uint8_t *data, size_t sz);
 
 void jump_to_app(uint32_t new_addr)
 {
+    /* Before jumping to the next application we have to clean up peripherial
+       setups and interrupts */
     usbd_stop();
+    spi_stop();
     usart_stop();
 
     rcc_disable();
 
-    /* Disable all interrupts */
     systick_interrupt_disable();
     systick_counter_disable();
 
     led_off(LED_BL);
     led_off(LED_ACTIVITY);
     led_off(LED_USB);
+    led_off(LED_ERROR);
 
     SCB_VTOR = new_addr;
-//    SCB_VTOR = APP_LOAD_ADDRESS & 0x1FFFFF; /* Max 2 MByte Flash*/
     asm volatile ("msr msp, %0"::"g"
                   (*(volatile uint32_t*)new_addr));
-    /* Jump to application */
+
     (*(void(**)())(new_addr + 4))();
 }
 
@@ -129,12 +139,14 @@ void bootloader(void)
                 if ((daddr + dsz) <= APP_SIZE_MAX &&
                     bl_flash_get_sector_num(daddr, dsz, &ss, &es) != -1) {
                     i = ss;
+                    print("Erasing sectors.");
                     flash_unlock();
                     do  {
-                        bl_dbg("Erasing sector...");
+                        print(".");
                         bl_flash_erase_sector(i);
                     } while (++i < (es - ss));
                     flash_lock();
+                    print("\r\n");
 
                     status = BL_PROTO_STATUS_OK;
                 } else {
@@ -318,14 +330,3 @@ static inline void __send_status(int status)
 
     usb_msgsend(msg, 3);
 }
-
-#if 0
-static void do_jump(uint32_t stacktop, uint32_t entrypoint)
-{
-    asm volatile(
-        "msr msp, %0	\n"
-        "bx	%1	\n"
-        : : "r" (stacktop), "r" (entrypoint) : );
-    for (;;);
-}
-#endif

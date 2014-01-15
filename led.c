@@ -65,7 +65,7 @@ void led_toggle(unsigned led)
 
 void led_gpio_init(void)
 {
-    gpio_mode_setup(BL_LEDS_PORT, GPIO_MODE_OUTPUT, GPIO_PUPD_PULLDOWN,
+    gpio_mode_setup(BL_LEDS_PORT, GPIO_MODE_OUTPUT, GPIO_PUPD_NONE,
                     BL_LED1_PIN | BL_LED2_PIN |
                     BL_LED3_PIN | BL_LED4_PIN);
 }

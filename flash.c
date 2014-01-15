@@ -5,7 +5,7 @@
 
 #include "flash.h"
 
-#define FLASH_PROGRAM_X32 (0x02 << 8)
+//#define FLASH_PROGRAM_X32 (0x02 << 8)
 
 #if 0
 static const uint32_t __sector_size[] = {
@@ -97,7 +97,7 @@ int bl_flash_erase_sector(uint32_t sector)
     size = bl_flash_sector_size(sector);
     for (i = 0; i < size; i += sizeof(uint32_t))
         if (*(uint32_t *)(address + i) != 0xffffffff) {
-            flash_erase_sector(sector, FLASH_PROGRAM_X32);
+            flash_erase_sector(sector, FLASH_CR_PROGRAM_X32);
             break;
         }
 

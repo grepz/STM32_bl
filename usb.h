@@ -7,7 +7,7 @@ static inline int usb_connect(void)
 }
 
 void usb_gpio_init(void);
-int usbd_create(void);
+int usbd_start(void);
 void usbd_stop(void);
 
 void usb_msgsend(uint8_t *msg, size_t len);

@@ -39,7 +39,7 @@ static usbd_device *usbd;
 static unsigned head = 0, tail = 0;
 static uint8_t __usb_rx[USB_RX_LEN];
 static const char *__usb_strings[] = {
-    "SapTech",
+    "FunnyCode Inc.",
     "TR",
     "CTRL",
 };
@@ -175,31 +175,16 @@ static const struct usb_config_descriptor __usbconf_desc = {
     .interface           = __usb_ifaces,
 };
 
-#if 0
 void usb_gpio_init(void)
 {
-    /* GPIO9 to sniff VBUS */
-    rcc_peripheral_enable_clock(&RCC_AHB1ENR, RCC_AHB1ENR_IOPAEN);
-    gpio_mode_setup(GPIOA, GPIO_MODE_INPUT, GPIO_PUPD_PULLDOWN, GPIO9);
-
-    rcc_clock_setup_hse_3v3(&hse_8mhz_3v3[CLOCK_3V3_120MHZ]);
-    rcc_peripheral_enable_clock(&RCC_AHB1ENR, RCC_AHB1ENR_IOPAEN);
-    rcc_peripheral_enable_clock(&RCC_AHB2ENR, RCC_AHB2ENR_OTGFSEN);
-
-    gpio_mode_setup(GPIOA, GPIO_MODE_AF, GPIO_PUPD_NONE,
-                    GPIO9 | GPIO11 | GPIO12);
-    gpio_set_af(GPIOA, GPIO_AF10, GPIO9 | GPIO11 | GPIO12);
-}
-#endif
-
-void usb_gpio_init(void)
-{
+    /* VBUS */
     gpio_mode_setup(GPIOA, GPIO_MODE_INPUT, GPIO_PUPD_NONE, GPIO9);
+    /* ID|DM|DP  */
     gpio_mode_setup(GPIOA, GPIO_MODE_AF, GPIO_PUPD_NONE, GPIO10|GPIO11|GPIO12);
     gpio_set_af(GPIOA, GPIO_AF10, GPIO10|GPIO11|GPIO12);
 }
 
-int usbd_create(void)
+int usbd_start(void)
 {
     usbd = usbd_init(&otgfs_usb_driver, &__usbdev_desc, &__usbconf_desc,
                      __usb_strings, 3, __usbd_buf, sizeof(__usbd_buf));
@@ -257,7 +242,7 @@ int get_byte(uint8_t *buf, unsigned int timeout)
 {
     int c = -1;
 
-    /* start the timeout */
+    /* Wait next symbol for `timeout' */
     set_timer(TIMER_IO, timeout);
 
     do {
@@ -299,18 +284,12 @@ static int __cdcacm_control_request(
     usbd_device *dev, struct usb_setup_data *req,uint8_t **buf,uint16_t *len,
     void (**complete)(usbd_device *dev, struct usb_setup_data *req))
 {
-    /* + */
     (void)complete;
     (void)buf;
     (void)dev;
 
     switch (req->bRequest) {
     case USB_CDC_REQ_SET_CONTROL_LINE_STATE: {
-        /*
-         * This Linux cdc_acm driver requires this to be implemented
-         * even though it's optional in the CDC spec, and we don't
-         * advertise it in the ACM functional descriptor.
-         */
         return 1;
     }
     case USB_CDC_REQ_SET_LINE_CODING:

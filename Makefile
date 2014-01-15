@@ -15,6 +15,7 @@ DEFS =  -DSTM32F4
 DEFS += -DAPP_LOAD_ADDRESS=0x08004000
 DEFS += -DSTM32F4
 DEFS += -DBLDEBUG
+DEFS += -DDPRINT
 DEFS += -DBL_FLASH_SECTORS=11
 
 CFLAGS = -Os
@@ -30,7 +31,8 @@ LFLAGS += -Tstm32f4.ld -L$(LIBOPENCM3_DIR)/lib
 
 FLAGS += -mthumb -mcpu=cortex-m4 -mfloat-abi=hard -mfpu=fpv4-sp-d16 -Tstm32f4.ld
 
-SRCS = main.c led.c usb.c bl.c usart.c syscalls.c timer.c flash.c utils.c
+SRCS = main.c bl.c syscalls.c init.c utils.c
+SRCS += timer.c flash.c usart.c spi.c at45db.c led.c usb.c
 SRCS += pff/diskio.c pff/pff.c
 
 all: $(PRODUCT)
