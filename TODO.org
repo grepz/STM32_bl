@@ -1,19 +1,19 @@
-* I/O drivers [0%]
-  - [ ] USART DMA
-  - [ ] CDC/ACM interface
-  - [ ] Uploading files through I/O
-* Flash operations [0%]
-  - [ ] Flash read
-  - [ ] Flash write
-  - [ ] Flash erase
-* FAT32 ro driver [0%]
-  - [ ] fat32 read
-  - [ ] interface to download files
-  - [ ] interface to cat files
-* Bootloader functions [0%]
-  - [ ] Loading object files from flash or interface(CDCACM/USART)
-  - [ ] Flashing object files
-  - [ ] Booting specific object files
+* I/O drivers [100%]
+  - [X] CDC/ACM interface
+  - [X] Uploading files through I/O
+* Flash operations [100%]
+  - [X] Flash read
+  - [X] Flash write
+  - [X] Flash erase
+* FAT32 ro driver [100%]
+  - [X] fat32 read
+  - [X] interface to cat files
+* Bootloader functions [100%]
+  - [X] Loading object files from flash or interface(CDCACM/USART)
+  - [X] Flashing object files
+  - [X] Booting specific object files
+* Functionality [0%]
+  - [ ] Scan flash pages for bootable applications
 
 * Protocol
 ** Start

@@ -47,8 +47,7 @@ static inline int __read_and_check(uint8_t *data, size_t sz);
 
 void jump_to_app(uint32_t new_addr)
 {
-    /* Before jumping to the next application we have to clean up peripherial
-       setups and interrupts */
+    /* Before jumping to the OS we must clear IRQ's and periph. setup */
     usbd_stop();
     spi_stop();
     usart_stop();
@@ -64,9 +63,7 @@ void jump_to_app(uint32_t new_addr)
     led_off(LED_ERROR);
 
     SCB_VTOR = new_addr;
-    asm volatile ("msr msp, %0"::"g"
-                  (*(volatile uint32_t*)new_addr));
-
+    asm volatile ("msr msp, %0"::"g" (*(volatile uint32_t*)new_addr));
     (*(void(**)())(new_addr + 4))();
 }
 
