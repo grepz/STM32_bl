@@ -28,13 +28,13 @@
 
 #define	_USE_READ	1	/* 1:Enable pf_read() */
 
-#define	_USE_DIR	0	/* 1:Enable pf_opendir() and pf_readdir() */
+#define	_USE_DIR	1	/* 1:Enable pf_opendir() and pf_readdir() */
 
 #define	_USE_LSEEK	0	/* 1:Enable pf_lseek() */
 
 #define	_USE_WRITE	0	/* 1:Enable pf_write() */
 
-#define _FS_FAT12	0	/* 1:Enable FAT12 support */
+#define _FS_FAT12	1	/* 1:Enable FAT12 support */
 #define _FS_FAT32	1	/* 1:Enable FAT32 support */
 
 
@@ -119,14 +119,14 @@ typedef struct {
 /* File function return code (FRESULT) */
 
 typedef enum {
-    FR_OK = 0,			/* 0 */
-    FR_DISK_ERR,		/* 1 */
-    FR_NOT_READY,		/* 2 */
-    FR_NO_FILE,			/* 3 */
-    FR_NO_PATH,			/* 4 */
-    FR_NOT_OPENED,		/* 5 */
-    FR_NOT_ENABLED,		/* 6 */
-    FR_NO_FILESYSTEM	/* 7 */
+    FR_OK = 0,        /* 0 */
+    FR_DISK_ERR,      /* 1 */
+    FR_NOT_READY,     /* 2 */
+    FR_NO_FILE,       /* 3 */
+    FR_NO_PATH,       /* 4 */
+    FR_NOT_OPENED,    /* 5 */
+    FR_NOT_ENABLED,   /* 6 */
+    FR_NO_FILESYSTEM, /* 7 */
 } FRESULT;
 
 

@@ -11,8 +11,8 @@
 
 #include "defs.h"
 
-#include "usart.h"
-#include "led.h"
+#include "mod/usart.h"
+#include "mod/led.h"
 
 void usart_gpio_init(void)
 {
@@ -51,9 +51,9 @@ void usart_print(const uint8_t *data, size_t len)
         usart_send_blocking(BL_USART, *data++);
 }
 
-void print(const char *msg)
+void print(const char *msg, size_t len)
 {
-    usart_print((const uint8_t *)msg, strlen(msg));
+    usart_print((const uint8_t *)msg, len);
 }
 
 

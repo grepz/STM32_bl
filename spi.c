@@ -6,11 +6,10 @@
 #include <libopencm3/stm32/dma.h>
 
 #include "defs.h"
-
 #include "board.h"
 
-#include "spi.h"
-#include "timer.h"
+#include "mod/spi.h"
+#include "mod/timer.h"
 
 typedef enum {
 	NONE = 0,
@@ -77,7 +76,7 @@ void spi_start(void)
     spi_set_master_mode(SPI2);                  /* MSTR = 1    */
     spi_set_dff_8bit(SPI2);                     /* DFf = 8 bit */
 //    spi_enable_crc(SPI2);
-    spi_set_baudrate_prescaler(SPI2, SPI_CR1_BR_FPCLK_DIV_4);
+    spi_set_baudrate_prescaler(SPI2, SPI_CR1_BR_FPCLK_DIV_2);
 
     /* CR2 */
     spi_enable_ss_output(SPI2); /* SSOE = 1 */
@@ -202,13 +201,13 @@ static void __dma_tx_setup(const uint8_t *txb, const uint8_t *_txb, size_t n)
 
 static void __dma_rx_wait(void)
 {
-    while (rxcomplete == 0);
+    while (rxcomplete != 1);
     rxcomplete = 0;
 }
 
 static void __dma_tx_wait(void)
 {
-    while (txcomplete == 0)
+    while (txcomplete != 0)
     txcomplete = 0;
 }
 
@@ -241,7 +240,7 @@ static void __spi_dma_start(uint32_t stream)
 /* RX IRQ */
 void dma1_stream3_isr(void)
 {
-    d_print("RX ISR: %lu:%lu\r\n", DMA1_LISR, DMA1_HISR);
+//    d_print("RX ISR: %lu:%lu\r\n", DMA1_LISR, DMA1_HISR);
 
     dma_disable_transfer_complete_interrupt(DMA1, DMA_STREAM3);
     dma_disable_stream(DMA1, DMA_STREAM3);
@@ -252,7 +251,7 @@ void dma1_stream3_isr(void)
 /* TX IRQ */
 void dma1_stream4_isr(void)
 {
-    d_print("TX ISR: %lu:%lu\r\n", DMA1_LISR, DMA1_HISR);
+//    d_print("TX ISR: %lu:%lu\r\n", DMA1_LISR, DMA1_HISR);
 
     dma_stream_reset(DMA1, DMA_STREAM4);
     dma_disable_stream(DMA1, DMA_STREAM4);

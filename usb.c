@@ -12,9 +12,9 @@
 
 #include "defs.h"
 
-#include "usb.h"
-#include "timer.h"
-#include "led.h"
+#include "mod/usb.h"
+#include "mod/timer.h"
+#include "mod/led.h"
 
 static void __cdcacm_set_config(usbd_device *dev, uint16_t wValue);
 static int __cdcacm_control_request(

@@ -2,9 +2,9 @@
 #include <libopencm3/stm32/gpio.h>
 
 #include "board.h"
-
 #include "defs.h"
-#include "led.h"
+
+#include "mod/led.h"
 
 static unsigned int __type;
 static unsigned int __state;

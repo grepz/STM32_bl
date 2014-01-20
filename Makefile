@@ -4,6 +4,7 @@ TOOLCHAIN_DIR = ~/arm-none-eabi/bin
 
 LIBOPENCM3_DIR = /opt/libopencm3/arm-none-eabi
 INCLUDE_DIRS = $(LIBOPENCM3_DIR)/include/libopencm3/
+INCLUDE_DIRS += "include/"
 
 CC      = $(TOOLCHAIN_DIR)/arm-none-eabi-gcc
 OBJCOPY = $(TOOLCHAIN_DIR)/arm-none-eabi-objcopy
@@ -14,8 +15,8 @@ INCLUDE = $(addprefix -I,$(INCLUDE_DIRS))
 DEFS =  -DSTM32F4
 DEFS += -DAPP_LOAD_ADDRESS=0x08004000
 DEFS += -DSTM32F4
-DEFS += -DBLDEBUG
-DEFS += -DDPRINT
+#DEFS += -DBLDEBUG
+#DEFS += -DDPRINT
 DEFS += -DBL_FLASH_SECTORS=11
 
 CFLAGS = -Os
@@ -33,7 +34,7 @@ FLAGS += -mthumb -mcpu=cortex-m4 -mfloat-abi=hard -mfpu=fpv4-sp-d16 -Tstm32f4.ld
 
 SRCS = main.c bl.c syscalls.c init.c utils.c
 SRCS += timer.c flash.c usart.c spi.c at45db.c led.c usb.c
-SRCS += pff/diskio.c pff/pff.c
+SRCS += fatfs/fatfs.c
 
 all: $(PRODUCT)
 

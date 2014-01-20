@@ -8,20 +8,21 @@
 #include <libopencm3/cm3/scb.h>
 #include <libopencm3/cm3/systick.h>
 
-#include "defs.h"
+#include "include/defs.h"
 
 #include "init.h"
 
+#include "mod/usart.h"
+#include "mod/led.h"
+#include "mod/usb.h"
+#include "mod/spi.h"
+#include "mod/at45db.h"
+#include "mod/timer.h"
+
 #include "bl.h"
-#include "usart.h"
-#include "led.h"
-#include "usb.h"
 #include "protocol.h"
-#include "timer.h"
 #include "flash.h"
 #include "utils.h"
-#include "spi.h"
-#include "at45db.h"
 
 typedef enum {
     BL_STATE_NONE,
@@ -139,14 +140,13 @@ void bootloader(void)
                 if ((daddr + dsz) <= APP_SIZE_MAX &&
                     bl_flash_get_sector_num(daddr, dsz, &ss, &es) != -1) {
                     i = ss;
-                    print("Erasing sectors.");
+                    bl_dbg("Erasing sectors...");
                     flash_unlock();
                     do  {
-                        print(".");
                         bl_flash_erase_sector(i);
                     } while (++i < (es - ss));
                     flash_lock();
-                    print("\r\n");
+                    bl_dbg("Done.");
 
                     status = BL_PROTO_STATUS_OK;
                 } else {
@@ -176,7 +176,6 @@ void bootloader(void)
                         /* Command crc check failed */
                         status = BL_PROTO_STATUS_CRCERR;
                     } else {
-                        print(".");
                         flash_unlock();
                         /* Starting to flash data */
                         for (i = 0; i < ((unsigned int)buf[1]+1)/4; i++) {

@@ -3,10 +3,10 @@
 
 #include <libopencm3/cm3/systick.h>
 
-#include "defs.h"
+#include "include/defs.h"
 
-#include "led.h"
-#include "timer.h"
+#include "mod/led.h"
+#include "mod/timer.h"
 
 volatile unsigned timer[NTIMERS];
 

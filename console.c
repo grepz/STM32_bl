@@ -2,8 +2,8 @@
 #include <stdio.h>
 #include <string.h>
 
-#include "console.h"
+#include "include/console.h"
 
-#include "defs.h"
+#include "include/defs.h"
 
-#include "usb.h"
+#include "include/usb.h"

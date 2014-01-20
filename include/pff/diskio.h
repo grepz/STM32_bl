@@ -10,7 +10,6 @@
 /* Status of Disk Functions */
 typedef BYTE	DSTATUS;
 
-
 /* Results of Disk Functions */
 typedef enum {
     RES_OK = 0,		/* 0: Function succeeded */

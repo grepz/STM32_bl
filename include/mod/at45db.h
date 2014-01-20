@@ -5,6 +5,9 @@ typedef struct __flash_storage
 {
     int pg_num;
     int pg_shifts;
+    uint32_t block_sz;
+    uint32_t erase_sz;
+    uint32_t n_eraseblocks;
 } flash_storage_t;
 
 int at45db_start(void);

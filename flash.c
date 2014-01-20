@@ -1,9 +1,9 @@
 #include <stdlib.h>
 #include <stdint.h>
 
-#include "defs.h"
+#include "include/defs.h"
 
-#include "flash.h"
+#include "include/flash.h"
 
 //#define FLASH_PROGRAM_X32 (0x02 << 8)
 

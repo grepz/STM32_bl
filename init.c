@@ -10,11 +10,11 @@
 
 #include "init.h"
 
-#include "led.h"
-#include "timer.h"
-#include "usart.h"
-#include "spi.h"
-#include "usb.h"
+#include "mod/led.h"
+#include "mod/timer.h"
+#include "mod/usart.h"
+#include "mod/spi.h"
+#include "mod/usb.h"
 
 static void __clock_setup_hsi(const clock_scale_t *clock);
 static void __nvic_setup(void);
