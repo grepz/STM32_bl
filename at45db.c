@@ -5,12 +5,12 @@
 
 #include <libopencm3/stm32/gpio.h>
 
-#include "defs.h"
-#include "board.h"
+#include <defs.h>
+#include <board.h>
 
-#include "mod/timer.h"
-#include "mod/at45db.h"
-#include "mod/spi.h"
+#include <mod/timer.h>
+#include <mod/at45db.h>
+#include <mod/spi.h>
 
 #define PG_PER_BLOCK        (8)
 #define PG_PER_SECTOR       (256)

@@ -1,6 +1,10 @@
 #ifndef __BL_USB_H
 #define __BL_USB_H
 
+#define USB_EP_OUT 0x01
+#define USB_EP_IN  0x82
+#define USB_EP_CMD 0x83
+
 static inline int usb_connect(void)
 {
     return gpio_get(GPIOA, GPIO9);

@@ -5,12 +5,11 @@
 #define BOARD_LED_OFF    gpio_clear
 
 #define LED_ACTIVITY 0
-#define LED_ERROR    1
-#define LED_BL       2
-#define LED_USB      3
+#define LED_USB      1
 
-#define LED_STATE_BLINK 1 << 0
-#define LED_STATE_RAPID 1 << 1
+#define LED_STATE_NOBLINK 0
+#define LED_STATE_BLINK   1 << 0
+#define LED_STATE_RAPID   1 << 1
 
 void led_on(unsigned led);
 void led_off(unsigned led);

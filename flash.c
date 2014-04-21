@@ -1,15 +1,15 @@
 #include <stdlib.h>
 #include <stdint.h>
 
-#include "include/defs.h"
-
-#include "include/flash.h"
+#include <defs.h>
+#include <flash.h>
 
 //#define FLASH_PROGRAM_X32 (0x02 << 8)
 
-#if 0
+
 static const uint32_t __sector_size[] = {
     16*1024, /* Bootloader page */
+    16*1024,
     16*1024,
     16*1024,
     64*1024,
@@ -33,34 +33,6 @@ static const uint32_t __sector_size[] = {
     128*1024,
     128*1024,
 };
-#endif
-
-static const uint32_t __sector_size[] = {
-    16*1024, /* Bootloader page */
-    16*1024,
-    16*1024,
-    16*1024,
-    16*1024,
-    16*1024,
-    16*1024,
-    16*1024,
-    16*1024,
-    16*1024,
-    16*1024,
-    16*1024,
-    16*1024,
-    16*1024,
-    16*1024,
-    16*1024,
-    16*1024,
-    16*1024,
-    16*1024,
-    16*1024,
-    16*1024,
-    16*1024,
-    16*1024,
-};
-
 
 inline uint32_t bl_flash_sector_size(uint32_t sector)
 {

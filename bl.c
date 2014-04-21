@@ -8,21 +8,21 @@
 #include <libopencm3/cm3/scb.h>
 #include <libopencm3/cm3/systick.h>
 
-#include "include/defs.h"
+#include <defs.h>
 
-#include "init.h"
+#include <init.h>
 
-#include "mod/usart.h"
-#include "mod/led.h"
-#include "mod/usb.h"
-#include "mod/spi.h"
-#include "mod/at45db.h"
-#include "mod/timer.h"
+#include <mod/usart.h>
+#include <mod/led.h>
+#include <mod/usb.h>
+#include <mod/spi.h>
+#include <mod/at45db.h>
+#include <mod/timer.h>
 
-#include "bl.h"
-#include "protocol.h"
-#include "flash.h"
-#include "utils.h"
+#include <bl.h>
+#include <protocol.h>
+#include <flash.h>
+#include <utils.h>
 
 typedef enum {
     BL_STATE_NONE,
@@ -48,6 +48,7 @@ static inline int __read_and_check(uint8_t *data, size_t sz);
 void jump_to_app(uint32_t new_addr)
 {
     /* Before jumping to the OS we must clear IRQ's and periph. setup */
+    nvic_disable();
     usbd_stop();
     spi_stop();
     usart_stop();
@@ -57,32 +58,31 @@ void jump_to_app(uint32_t new_addr)
     systick_interrupt_disable();
     systick_counter_disable();
 
-    led_off(LED_BL);
     led_off(LED_ACTIVITY);
     led_off(LED_USB);
-    led_off(LED_ERROR);
 
     SCB_VTOR = new_addr;
     asm volatile ("msr msp, %0"::"g" (*(volatile uint32_t*)new_addr));
     (*(void(**)())(new_addr + 4))();
 }
 
-void bootloader(void)
+void bl_listen(void)
 {
     unsigned int i;
     unsigned int ss, es;
     int state = BL_STATE_NONE, status;
     uint8_t buf[128];
-    uint32_t daddr = 0, dsz = 0, addr, csz, w;
+    uint32_t daddr = 0, dsz = 0, addr = 0, csz, w;
     data_buf_t dbuf;
     uint32_t data_crc;
 
     for (;;) {
         if (state == BL_STATE_NONE) {
             daddr = dsz = addr = csz = w = 0;
-            led_off(LED_BL);
-        } else
+//            led_off(LED_BL);
+        } /*else
             led_on(LED_BL);
+          */
 
         if (get_byte(buf, 1000) == -1) {
             /* Check inactivity timer if no data present,
@@ -97,7 +97,7 @@ void bootloader(void)
         }
 
         if (state == BL_STATE_NONE) {
-            led_off(LED_BL);
+//            led_off(LED_BL);
             /* Waiting for handshake */
             if (*buf != BL_PROTO_CMD_HANDSHAKE ||
                 __read_and_check(buf, 2) != BL_PROTO_STATUS_OK) {
@@ -138,11 +138,15 @@ void bootloader(void)
                     bl_flash_get_sector_num(daddr, dsz, &ss, &es) != -1) {
                     i = ss;
                     bl_dbg("Erasing sectors...");
+                    led_blink(LED_USB, LED_STATE_RAPID);
+                    wait(150);
                     flash_unlock();
-                    do  {
+                    for (i = es; i <= ss; i++) {
                         bl_flash_erase_sector(i);
-                    } while (++i < (es - ss));
+                    }
                     flash_lock();
+                    led_blink(LED_USB, LED_STATE_NOBLINK);
+                    led_on(LED_USB);
                     bl_dbg("Done.");
 
                     status = BL_PROTO_STATUS_OK;
@@ -173,6 +177,7 @@ void bootloader(void)
                         /* Command crc check failed */
                         status = BL_PROTO_STATUS_CRCERR;
                     } else {
+                        bl_dbg("Flashing data.");
                         flash_unlock();
                         /* Starting to flash data */
                         for (i = 0; i < ((unsigned int)buf[1]+1)/4; i++) {
@@ -186,6 +191,7 @@ void bootloader(void)
                             daddr += 4;
                         }
                         flash_lock();
+                        bl_dbg("End of flashing.");
 
                         status = BL_PROTO_STATUS_OK;
                     }

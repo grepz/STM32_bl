@@ -6,7 +6,7 @@
 
 #include <stdint.h>
 
-#include "include/defs.h"
+#include <defs.h>
 
 #define UNUSED __attribute__((unused))
 

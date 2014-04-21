@@ -19,8 +19,6 @@
 
 #define BL_LED1_PIN GPIO13
 #define BL_LED2_PIN GPIO14
-#define BL_LED3_PIN GPIO13
-#define BL_LED4_PIN GPIO14
 
 /* USB configuration */
 

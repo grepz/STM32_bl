@@ -1,23 +1,16 @@
 #include <stdlib.h>
 #include <stdio.h>
+#include <string.h>
 
 #include <libopencm3/cm3/nvic.h>
 #include <libopencm3/stm32/gpio.h>
 #include <libopencm3/stm32/dma.h>
 
-#include "defs.h"
-#include "board.h"
+#include <defs.h>
+#include <board.h>
 
-#include "mod/spi.h"
-#include "mod/timer.h"
-
-typedef enum {
-	NONE = 0,
-	ONE,
-	DONE
-} trans_status;
-
-volatile int transceive_status;
+#include <mod/spi.h>
+#include <mod/timer.h>
 
 static volatile int rxcomplete = 0;
 static volatile int txcomplete = 0;
@@ -46,6 +39,10 @@ void spi_gpio_init(void)
     gpio_mode_setup(GPIOB, GPIO_MODE_OUTPUT, GPIO_PUPD_NONE, BL_SPI2_NSS);
     gpio_set_output_options(GPIOB, GPIO_OTYPE_PP, GPIO_OSPEED_50MHZ,
                             BL_SPI2_NSS);
+}
+
+void spi_start(void)
+{
     /* Reset flash chip */
     gpio_clear(GPIOD, BL_SPI2_RST);
     wait(10);
@@ -55,10 +52,7 @@ void spi_gpio_init(void)
     gpio_set(GPIOD, BL_SPI2_WP);
     /* No WriteProtect, Set Chip select to 1(no select) */
     gpio_set(GPIOB, BL_SPI2_NSS);
-}
 
-void spi_start(void)
-{
     /* Reset and disable SPI */
     spi_reset(SPI2);
 
@@ -76,6 +70,7 @@ void spi_start(void)
     spi_set_master_mode(SPI2);                  /* MSTR = 1    */
     spi_set_dff_8bit(SPI2);                     /* DFf = 8 bit */
 //    spi_enable_crc(SPI2);
+    /* XXX: Too fast? Maybe DIV_4 will be better? */
     spi_set_baudrate_prescaler(SPI2, SPI_CR1_BR_FPCLK_DIV_2);
 
     /* CR2 */
@@ -97,7 +92,10 @@ void spi_start(void)
 
 void spi_stop(void)
 {
-    spi_clean_disable(SPI2);
+    spi_disable_tx_dma(SPI2);
+    spi_disable_rx_dma(SPI2);
+    spi_disable(SPI2);
+//    spi_clean_disable(SPI2);
 }
 
 inline void spi_select(uint8_t select)
@@ -141,20 +139,6 @@ void spi_exchange_nodma(const uint8_t *txbuf, uint8_t *rxbuf, size_t n)
             *rxptr++ = byte;
     }
 }
-
-#if 0
-static void __spi_send(uint8_t byte)
-{
-    while (!(SPI_SR(SPI2) & SPI_SR_TXE));
-    SPI_DR(SPI2) = byte;
-}
-
-static uint8_t __spi_read(void)
-{
-    while (!(SPI_SR(SPI2) & SPI_SR_RXNE));
-    return SPI_DR(SPI2);
-}
-#endif
 
 static void __dma_rx_setup(uint8_t *rxb, uint8_t *_rxb, size_t n)
 {

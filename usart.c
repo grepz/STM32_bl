@@ -7,12 +7,12 @@
 
 #include <libopencm3/cm3/nvic.h>
 
-#include "board.h"
+#include <board.h>
 
-#include "defs.h"
+#include <defs.h>
 
-#include "mod/usart.h"
-#include "mod/led.h"
+#include <mod/usart.h>
+#include <mod/led.h>
 
 void usart_gpio_init(void)
 {

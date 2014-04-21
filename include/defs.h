@@ -1,7 +1,7 @@
 #ifndef __BL_DEFS_H
 #define __BL_DEFS_H
 
-#include "mod/usart.h"
+#include <mod/usart.h>
 
 #define BL_TIMEOUT 15000
 

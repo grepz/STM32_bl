@@ -8,16 +8,15 @@
 #include <libopencm3/stm32/f4/flash.h>
 #include <libopencm3/stm32/f4/pwr.h>
 
-#include "init.h"
+#include <init.h>
 
-#include "mod/led.h"
-#include "mod/timer.h"
-#include "mod/usart.h"
-#include "mod/spi.h"
-#include "mod/usb.h"
+#include <mod/led.h>
+#include <mod/timer.h>
+#include <mod/usart.h>
+#include <mod/spi.h>
+#include <mod/usb.h>
 
 static void __clock_setup_hsi(const clock_scale_t *clock);
-static void __nvic_setup(void);
 static void __gpio_init(void);
 
 void bl_init(void)
@@ -36,12 +35,11 @@ void bl_init(void)
         .apb2_frequency = 168000000ul/2,
     };
 
+    nvic_enable();
     __clock_setup_hsi(&scale);
-
     rcc_enable();
-    timers_init();
     __gpio_init();
-    __nvic_setup();
+    timers_init();
 }
 
 void rcc_enable(void)
@@ -53,7 +51,6 @@ void rcc_enable(void)
                                  RCC_AHB1ENR_IOPAEN|RCC_AHB1ENR_IOPBEN|
                                  RCC_AHB1ENR_IOPCEN|RCC_AHB1ENR_IOPDEN);
     rcc_peripheral_enable_clock(&RCC_AHB2ENR, RCC_AHB2ENR_OTGFSEN);
-    rcc_peripheral_enable_clock(&RCC_AHB3ENR, RCC_AHB3ENR_FSMCEN);
     rcc_peripheral_enable_clock(&RCC_AHB1ENR, RCC_AHB1ENR_DMA1EN);
 }
 
@@ -66,8 +63,27 @@ void rcc_disable(void)
                                  RCC_AHB1ENR_IOPAEN|RCC_AHB1ENR_IOPBEN|
                                  RCC_AHB1ENR_IOPCEN|RCC_AHB1ENR_IOPDEN);
     rcc_peripheral_disable_clock(&RCC_AHB2ENR, RCC_AHB2ENR_OTGFSEN);
-    rcc_peripheral_disable_clock(&RCC_AHB3ENR, RCC_AHB3ENR_FSMCEN);
     rcc_peripheral_disable_clock(&RCC_AHB1ENR, RCC_AHB1ENR_DMA1EN);
+}
+
+void nvic_enable(void)
+{
+    /* USB CDC/ACM */
+    nvic_enable_irq(NVIC_OTG_FS_IRQ);
+    /* SPI RX */
+    nvic_enable_irq(NVIC_DMA1_STREAM3_IRQ);
+    /* SPI TX */
+    nvic_enable_irq(NVIC_DMA1_STREAM4_IRQ);
+}
+
+void nvic_disable(void)
+{
+    /* SPI RX */
+    nvic_disable_irq(NVIC_DMA1_STREAM3_IRQ);
+    /* SPI TX */
+    nvic_disable_irq(NVIC_DMA1_STREAM4_IRQ);
+    /* USB CDC/ACM */
+    nvic_disable_irq(NVIC_OTG_FS_IRQ);
 }
 
 static void __clock_setup_hsi(const clock_scale_t *clock)
@@ -112,18 +128,10 @@ static void __clock_setup_hsi(const clock_scale_t *clock)
 	rcc_ppre2_frequency = clock->apb2_frequency;
 }
 
-static void __nvic_setup(void)
-{
-    /* SPI RX */
-    nvic_enable_irq(NVIC_DMA1_STREAM3_IRQ);
-    /* SPI TX */
-    nvic_enable_irq(NVIC_DMA1_STREAM4_IRQ);
-}
-
 static void __gpio_init(void)
 {
     led_gpio_init();
     usart_gpio_init();
     spi_gpio_init();
-//    usb_gpio_init();
+    usb_gpio_init();
 }

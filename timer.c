@@ -3,10 +3,10 @@
 
 #include <libopencm3/cm3/systick.h>
 
-#include "include/defs.h"
+#include <defs.h>
 
-#include "mod/led.h"
-#include "mod/timer.h"
+#include <mod/led.h>
+#include <mod/timer.h>
 
 volatile unsigned timer[NTIMERS];
 
@@ -19,7 +19,8 @@ void sys_tick_handler(void)
         if (timer[i] > 0)
             timer[i]--;
 
-    if ((blink = led_blink_state()) && timer[TIMER_LED] == 0) {
+    if ((blink = led_blink_state()) != LED_STATE_NOBLINK &&
+        timer[TIMER_LED] == 0) {
         led_toggle(led_blink_type());
         timer[TIMER_LED] = (blink & LED_STATE_RAPID) ? 50 : 200;
     }
