@@ -1,0 +1,10 @@
+# -*- mode:org -*-
+
+* STM32 bootloader
+
+  A very simple bootloader for STM32F4. Project uses libopencm3 library as an
+  inteface to hardware. Latest libopencm3 can be found at
+  https://github.com/libopencm3
+
+  Bootloader utilizes simple STM32/host USB protocol(see STM32_bl_ctrl
+  and bl.c for details).
