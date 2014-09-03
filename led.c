@@ -1,5 +1,7 @@
-#include <libopencm3/stm32/rcc.h>
+#include <stdint.h>
+
 #include <libopencm3/stm32/gpio.h>
+#include <libopencm3/stm32/rcc.h>
 
 #include <board.h>
 #include <defs.h>

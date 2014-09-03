@@ -1,9 +1,9 @@
 PRODUCT = tracker_boot
 
-TOOLCHAIN_DIR = ~/arm-none-eabi/bin
+TOOLCHAIN_DIR = ~/bin
 
 LIBOPENCM3_DIR = /opt/libopencm3/arm-none-eabi
-INCLUDE_DIRS = $(LIBOPENCM3_DIR)/include/libopencm3/
+INCLUDE_DIRS = $(LIBOPENCM3_DIR)/include
 INCLUDE_DIRS += "include/"
 
 CC      = $(TOOLCHAIN_DIR)/arm-none-eabi-gcc
@@ -13,9 +13,8 @@ LD      = $(TOOLCHAIN_DIR)/arm-none-eabi-ld
 INCLUDE = $(addprefix -I,$(INCLUDE_DIRS))
 
 DEFS =  -DSTM32F4
-DEFS += -DAPP_LOAD_ADDRESS=0x08004000
-DEFS += -DSTM32F4
-#DEFS += -DBLDEBUG
+DEFS += -DAPP_LOAD_ADDRESS=0x08008000
+DEFS += -DBLDEBUG
 #DEFS += -DDPRINT
 DEFS += -DBL_FLASH_SECTORS=11
 
@@ -27,7 +26,7 @@ CFLAGS += -mlittle-endian -mthumb -mcpu=cortex-m4 -mthumb-interwork
 LIBS = -lopencm3_stm32f4
 
 LFLAGS = --static -lc -lnosys -nostartfiles -Wl,--gc-sections
-LFLAGS += -mthumb -mcpu=cortex-m4 -mthumb -mfloat-abi=hard -mfpu=fpv4-sp-d16
+LFLAGS += -mcpu=cortex-m4 -mthumb -mfloat-abi=hard -mfpu=fpv4-sp-d16
 LFLAGS += -Tstm32f4.ld -L$(LIBOPENCM3_DIR)/lib
 
 FLAGS += -mthumb -mcpu=cortex-m4 -mfloat-abi=hard -mfpu=fpv4-sp-d16 -Tstm32f4.ld

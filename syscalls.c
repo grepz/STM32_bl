@@ -1,10 +1,9 @@
+#include <stdint.h>
+#include <stdlib.h>
 #include <reent.h>
 #include <errno.h>
-#include <stdlib.h>
 #include <sys/types.h>
 #include <sys/stat.h>
-
-#include <stdint.h>
 
 #include <defs.h>
 

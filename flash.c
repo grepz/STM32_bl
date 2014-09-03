@@ -1,6 +1,7 @@
 #include <stdlib.h>
 #include <stdint.h>
 
+#include <libopencm3/stm32/gpio.h>
 #include <defs.h>
 #include <flash.h>
 

@@ -1,6 +1,6 @@
 // C source code header -*- coding: utf-8 -*-
 // Created: [13.16:57 Январь 03 2014]
-// Modified: [23.12:36 Март 03 2014]
+// Modified: [01.19:34 Июль 12 2014]
 // Description:
 // Author: Stanislav M. Ivankin
 // Email: lessgrep@gmail.com

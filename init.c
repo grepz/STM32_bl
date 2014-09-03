@@ -1,10 +1,9 @@
 #include <stdlib.h>
 #include <stdint.h>
 
-#include <libopencm3/cm3/nvic.h>
-
-#include <libopencm3/stm32/rcc.h>
 #include <libopencm3/stm32/gpio.h>
+#include <libopencm3/cm3/nvic.h>
+#include <libopencm3/stm32/rcc.h>
 #include <libopencm3/stm32/f4/flash.h>
 #include <libopencm3/stm32/f4/pwr.h>
 
@@ -46,10 +45,10 @@ void rcc_enable(void)
 {
     rcc_peripheral_enable_clock(&RCC_APB1ENR, RCC_APB1ENR_SPI2EN);
     rcc_peripheral_enable_clock(&RCC_APB2ENR,
-                                 RCC_APB2ENR_SYSCFGEN|RCC_APB2ENR_USART6EN);
+                                RCC_APB2ENR_SYSCFGEN|RCC_APB2ENR_USART6EN);
     rcc_peripheral_enable_clock(&RCC_AHB1ENR,
-                                 RCC_AHB1ENR_IOPAEN|RCC_AHB1ENR_IOPBEN|
-                                 RCC_AHB1ENR_IOPCEN|RCC_AHB1ENR_IOPDEN);
+                                RCC_AHB1ENR_IOPAEN|RCC_AHB1ENR_IOPBEN|
+                                RCC_AHB1ENR_IOPCEN|RCC_AHB1ENR_IOPDEN);
     rcc_peripheral_enable_clock(&RCC_AHB2ENR, RCC_AHB2ENR_OTGFSEN);
     rcc_peripheral_enable_clock(&RCC_AHB1ENR, RCC_AHB1ENR_DMA1EN);
 }

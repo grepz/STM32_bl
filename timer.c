@@ -34,7 +34,7 @@ void wait(unsigned msec)
 
 void timers_init(void)
 {
-    systick_set_clocksource(STK_CTRL_CLKSOURCE_AHB);
+    systick_set_clocksource(STK_CSR_CLKSOURCE_AHB);
     /* systick mhz */
     systick_set_reload(180 * 1000);
     systick_interrupt_enable();
