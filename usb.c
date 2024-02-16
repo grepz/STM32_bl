@@ -16,7 +16,7 @@
 #include <mod/led.h>
 
 static void __cdcacm_set_config(usbd_device *dev, uint16_t wValue);
-static int __cdcacm_control_request(
+static enum usbd_request_return_codes __cdcacm_control_request(
     usbd_device *dev, struct usb_setup_data *req, uint8_t **buf, uint16_t *len,
     void (**complete)(usbd_device *usbd_dev, struct usb_setup_data *req));
 static void __cdcacm_data_rx_cb(usbd_device *dev, uint8_t ep);
@@ -288,8 +288,11 @@ static void __cdcacm_set_config(usbd_device *dev, uint16_t wValue)
         __cdcacm_control_request);
 }
 
-static int __cdcacm_control_request(
-    usbd_device *dev, struct usb_setup_data *req,uint8_t **buf,uint16_t *len,
+static enum usbd_request_return_codes __cdcacm_control_request(
+    usbd_device *dev,
+    struct usb_setup_data *req,
+    uint8_t **buf,
+    uint16_t *len,
     void (**complete)(usbd_device *dev, struct usb_setup_data *req))
 {
     (void)complete;
@@ -298,16 +301,17 @@ static int __cdcacm_control_request(
 
     switch (req->bRequest) {
     case USB_CDC_REQ_SET_CONTROL_LINE_STATE: {
-        return 1;
+        return USBD_REQ_HANDLED;
     }
     case USB_CDC_REQ_SET_LINE_CODING:
         if (*len < sizeof(struct usb_cdc_line_coding))
-            return 0;
+            return USBD_REQ_NOTSUPP;
 
-        return 1;
+        return USBD_REQ_HANDLED;
     }
 
-    return 0;
+    return USBD_REQ_NEXT_CALLBACK
+        ;
 }
 
 static void __cdcacm_data_rx_cb(usbd_device *dev, uint8_t ep)

@@ -1,14 +1,15 @@
 PRODUCT = tracker_boot
 
-TOOLCHAIN_DIR = ~/bin
+LIBOPENCM3_DIR    ?= /opt/libopencm3/
 
-LIBOPENCM3_DIR = /opt/libopencm3/arm-none-eabi
-INCLUDE_DIRS = $(LIBOPENCM3_DIR)/include
+INCLUDE_DIRS = "$(LIBOPENCM3_DIR)/include"
 INCLUDE_DIRS += "include/"
 
-CC      = $(TOOLCHAIN_DIR)/arm-none-eabi-gcc
-OBJCOPY = $(TOOLCHAIN_DIR)/arm-none-eabi-objcopy
-LD      = $(TOOLCHAIN_DIR)/arm-none-eabi-ld
+Q       := @
+ECHO    := /bin/echo
+CC      := $(ARM_TOOLCHAIN_DIR)arm-none-eabi-gcc
+OBJCOPY := $(ARM_TOOLCHAIN_DIR)arm-none-eabi-objcopy
+LD      := $(ARM_TOOLCHAIN_DIR)arm-none-eabi-ld
 
 INCLUDE = $(addprefix -I,$(INCLUDE_DIRS))
 
@@ -40,6 +41,7 @@ all: $(PRODUCT)
 $(PRODUCT): $(PRODUCT).elf
 
 $(PRODUCT).elf: $(SRCS)
+	$(Q)$(ECHO) "Variable: $(LIBOPENCM3_DIR)"
 	$(CC) $(INCLUDE) $(DEFS) $(CFLAGS) $(LFLAGS) $^ -o $@ $(LIBS)
 	$(OBJCOPY) -O ihex $(PRODUCT).elf $(PRODUCT).hex
 	$(OBJCOPY) -O binary $(PRODUCT).elf $(PRODUCT).bin

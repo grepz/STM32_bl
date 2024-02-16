@@ -35,7 +35,7 @@ static const uint32_t __sector_size[] = {
     128*1024,
 };
 
-inline uint32_t bl_flash_sector_size(uint32_t sector)
+uint32_t bl_flash_sector_size(uint32_t sector)
 {
     if (sector < BL_FLASH_SECTORS)
         return __sector_size[sector];

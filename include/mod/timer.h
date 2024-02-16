@@ -12,8 +12,8 @@ typedef enum {
 } bl_timer_t;
 
 void timers_init(void);
-inline void set_timer(bl_timer_t tim, unsigned int msec);
-inline unsigned int check_timer(bl_timer_t tim);
-inline void wait(unsigned msec);
+void set_timer(bl_timer_t tim, unsigned int msec);
+unsigned int check_timer(bl_timer_t tim);
+void wait(unsigned msec);
 
 #endif /* __BL_TIMER_H */

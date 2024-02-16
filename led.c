@@ -53,18 +53,18 @@ void led_gpio_init(void)
                     BL_LED1_PIN | BL_LED2_PIN);
 }
 
-inline void led_blink(unsigned int type, unsigned int state)
+void led_blink(unsigned int type, unsigned int state)
 {
     __type  = type;
     __state = state;
 }
 
-inline unsigned int led_blink_state(void)
+unsigned int led_blink_state(void)
 {
     return __state;
 }
 
-inline unsigned int led_blink_type(void)
+unsigned int led_blink_type(void)
 {
     return __type;
 }

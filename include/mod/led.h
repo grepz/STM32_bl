@@ -16,8 +16,8 @@ void led_off(unsigned led);
 void led_toggle(unsigned led);
 void led_gpio_init(void);
 
-inline void led_blink(unsigned int type, unsigned int state);
-inline unsigned int led_blink_state(void);
-inline unsigned int led_blink_type(void);
+void led_blink(unsigned int type, unsigned int state);
+unsigned int led_blink_state(void);
+unsigned int led_blink_type(void);
 
 #endif /* __BL_LED_H */

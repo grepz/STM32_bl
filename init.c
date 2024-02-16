@@ -15,21 +15,22 @@
 #include <mod/spi.h>
 #include <mod/usb.h>
 
-static void __clock_setup_hsi(const clock_scale_t *clock);
+static void __clock_setup_hsi(const struct rcc_clock_scale *clock);
 static void __gpio_init(void);
 
 void bl_init(void)
 {
-    clock_scale_t scale = {
+    struct rcc_clock_scale scale = {
         .pllm = 4,
         .plln = 84,
         .pllp = 2,
         .pllq = 7,
+        .pllr = 0,
         .hpre = RCC_CFGR_HPRE_DIV_NONE,
         .ppre1 = RCC_CFGR_PPRE_DIV_4,
         .ppre2 = RCC_CFGR_PPRE_DIV_2,
-        .power_save = 1,
-        .flash_config = FLASH_ACR_ICE | FLASH_ACR_DCE | FLASH_ACR_LATENCY_5WS,
+//        .power_save = 1,
+        .flash_config = FLASH_ACR_ICEN | FLASH_ACR_DCEN | FLASH_ACR_LATENCY_5WS,
         .apb1_frequency = 168000000ul/4,
         .apb2_frequency = 168000000ul/2,
     };
@@ -85,31 +86,34 @@ void nvic_disable(void)
     nvic_disable_irq(NVIC_OTG_FS_IRQ);
 }
 
-static void __clock_setup_hsi(const clock_scale_t *clock)
+static void __clock_setup_hsi(const struct rcc_clock_scale *clock)
 {
 	/* Enable internal high-speed oscillator. */
-	rcc_osc_on(HSI);
-	rcc_wait_for_osc_ready(HSI);
+	rcc_osc_on(RCC_HSI);
+	rcc_wait_for_osc_ready(RCC_HSI);
 	/* Select HSI as SYSCLK source. */
 	rcc_set_sysclk_source(RCC_CFGR_SW_HSI);
-        rcc_wait_for_sysclk_status(HSI);
+    rcc_wait_for_sysclk_status(RCC_HSI);
 
 	/* Enable/disable high performance mode */
+    /*
 	if (!clock->power_save) {
 		pwr_set_vos_scale(0);
 	} else {
-		pwr_set_vos_scale(1);
-	}
+    */
+    pwr_set_vos_scale(1);
+    /*}*/
 
-        rcc_osc_off(PLL);
-        while ((RCC_CR & RCC_CR_PLLRDY) != 0);
+    rcc_osc_off(RCC_PLL);
+    while ((RCC_CR & RCC_CR_PLLRDY) != 0) {
+    }
 
 	rcc_set_main_pll_hsi(clock->pllm, clock->plln,
-                             clock->pllp, clock->pllq);
+                         clock->pllp, clock->pllq, clock->pllr);
 
-        rcc_osc_on(PLL);
+    rcc_osc_on(RCC_PLL);
 	/* Enable PLL oscillator and wait for it to stabilize. */
-	rcc_wait_for_osc_ready(PLL);
+	rcc_wait_for_osc_ready(RCC_PLL);
 
 	rcc_set_hpre(clock->hpre);
 	rcc_set_ppre1(clock->ppre1);
@@ -120,11 +124,11 @@ static void __clock_setup_hsi(const clock_scale_t *clock)
 	/* Select PLL as SYSCLK source. */
 	rcc_set_sysclk_source(RCC_CFGR_SW_PLL);
 	/* Wait for PLL clock to be selected. */
-	rcc_wait_for_sysclk_status(PLL);
+	rcc_wait_for_sysclk_status(RCC_PLL);
 
 	/* Set the peripheral clock frequencies used. */
-	rcc_ppre1_frequency = clock->apb1_frequency;
-	rcc_ppre2_frequency = clock->apb2_frequency;
+	rcc_apb1_frequency = clock->apb1_frequency;
+	rcc_apb2_frequency = clock->apb2_frequency;
 }
 
 static void __gpio_init(void)

@@ -55,7 +55,7 @@ void spi_start(void)
     gpio_set(GPIOB, BL_SPI2_NSS);
 
     /* Reset and disable SPI */
-    spi_reset(SPI2);
+    spi_disable(SPI2);
 
     /* Disable I2S */
     SPI2_I2SCFGR = 0;
@@ -99,7 +99,7 @@ void spi_stop(void)
 //    spi_clean_disable(SPI2);
 }
 
-inline void spi_select(uint8_t select)
+void spi_select(uint8_t select)
 {
     /* Selected(1): Low level; De-selected(0): High Level */
     (select == 0) ? gpio_set(GPIOB,BL_SPI2_NSS) : gpio_clear(GPIOB,BL_SPI2_NSS);
