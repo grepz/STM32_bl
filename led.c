@@ -8,49 +8,31 @@
 
 #include <mod/led.h>
 
-static unsigned int __type  = LED_ACTIVITY;
+static unsigned int __type  = LED_AVAILABLE;
 static unsigned int __state = LED_STATE_NOBLINK;
 
 void led_on(unsigned led)
 {
-    switch (led) {
-    case 0:
-        BOARD_LED_ON(BL_LEDS_PORT, BL_LED1_PIN);
-        break;
-    case 1:
-        BOARD_LED_ON(BL_LEDS_PORT, BL_LED2_PIN);
-        break;
-    }
+    unsigned led_port = BL_LED1_PIN;
+    BOARD_LED_ON(BL_LEDS_PORT, led_port);
 }
 
 void led_off(unsigned led)
 {
-    switch (led) {
-    case 0:
-        BOARD_LED_OFF(BL_LEDS_PORT, BL_LED1_PIN);
-        break;
-    case 1:
-        BOARD_LED_OFF(BL_LEDS_PORT, BL_LED2_PIN);
-        break;
-    }
+    unsigned led_port = BL_LED1_PIN;
+    BOARD_LED_OFF(BL_LEDS_PORT, led_port);
 }
 
 void led_toggle(unsigned led)
 {
-    switch (led) {
-    case 0:
-        gpio_toggle(BL_LEDS_PORT, BL_LED1_PIN);
-        break;
-    case 1:
-        gpio_toggle(BL_LEDS_PORT, BL_LED2_PIN);
-        break;
-    }
+    unsigned led_port = BL_LED1_PIN;
+    gpio_toggle(BL_LEDS_PORT, led_port);
 }
 
 void led_gpio_init(void)
 {
     gpio_mode_setup(BL_LEDS_PORT, GPIO_MODE_OUTPUT, GPIO_PUPD_NONE,
-                    BL_LED1_PIN | BL_LED2_PIN);
+                    BL_LEDS_ALL);
 }
 
 void led_blink(unsigned int type, unsigned int state)

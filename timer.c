@@ -36,7 +36,7 @@ void timers_init(void)
 {
     systick_set_clocksource(STK_CSR_CLKSOURCE_AHB);
     /* systick mhz */
-    systick_set_reload(180 * 1000);
+    systick_set_reload(96 * 1000);
     systick_interrupt_enable();
     systick_counter_enable();
 }

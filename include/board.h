@@ -15,10 +15,9 @@
 #define USART_AF GPIO_AF8
 
 /* Leds configuration */
-#define BL_LEDS_PORT GPIOD
-
-#define BL_LED1_PIN GPIO13
-#define BL_LED2_PIN GPIO14
+#define BL_LEDS_PORT GPIOA
+#define BL_LED1_PIN GPIO5
+#define BL_LEDS_ALL BL_LED1_PIN
 
 /* USB configuration */
 

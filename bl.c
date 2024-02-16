@@ -58,8 +58,7 @@ void jump_to_app(uint32_t new_addr)
     systick_interrupt_disable();
     systick_counter_disable();
 
-    led_off(LED_ACTIVITY);
-    led_off(LED_USB);
+    led_blink(LED_STATE_BLINK, LED_AVAILABLE);
 
     SCB_VTOR = new_addr;
     asm volatile ("msr msp, %0"::"g" (*(volatile uint32_t*)new_addr));
@@ -79,10 +78,7 @@ void bl_listen(void)
     for (;;) {
         if (state == BL_STATE_NONE) {
             daddr = dsz = addr = csz = w = 0;
-//            led_off(LED_BL);
-        } /*else
-            led_on(LED_BL);
-          */
+        }
 
         if (get_byte(buf, 1000) == -1) {
             /* Check inactivity timer if no data present,
@@ -97,7 +93,6 @@ void bl_listen(void)
         }
 
         if (state == BL_STATE_NONE) {
-//            led_off(LED_BL);
             /* Waiting for handshake */
             if (*buf != BL_PROTO_CMD_HANDSHAKE ||
                 __read_and_check(buf, 2) != BL_PROTO_STATUS_OK) {
@@ -127,26 +122,30 @@ void bl_listen(void)
             status = __read_and_check(buf, 10);
             if (status == BL_PROTO_STATUS_OK) {
                 /* Start address */
-                daddr |= buf[1];       daddr |= buf[2] << 8;
-                daddr |= buf[3] << 16; daddr |= buf[4] << 24;
+                daddr |= buf[1];
+                daddr |= buf[2] << 8;
+                daddr |= buf[3] << 16;
+                daddr |= buf[4] << 24;
                 daddr -= STM32_BASE_ADDR;
                 /* Data size */
-                dsz |= buf[5];       dsz |= buf[6] << 8;
-                dsz |= buf[7] << 16; dsz |= buf[8] << 24;
+                dsz |= buf[5];
+                dsz |= buf[6] << 8;
+                dsz |= buf[7] << 16;
+                dsz |= buf[8] << 24;
                 /* Checking if we are in address boundaries */
                 if ((daddr + dsz) <= APP_SIZE_MAX &&
                     bl_flash_get_sector_num(daddr, dsz, &ss, &es) != -1) {
                     i = ss;
                     bl_dbg("Erasing sectors...");
-                    led_blink(LED_USB, LED_STATE_RAPID);
+                    led_blink(LED_AVAILABLE, LED_STATE_RAPID);
                     wait(150);
                     flash_unlock();
                     for (i = es; i <= ss; i++) {
                         bl_flash_erase_sector(i);
                     }
                     flash_lock();
-                    led_blink(LED_USB, LED_STATE_NOBLINK);
-                    led_on(LED_USB);
+                    led_blink(LED_AVAILABLE, LED_STATE_NOBLINK);
+                    led_on(LED_AVAILABLE);
                     bl_dbg("Done.");
 
                     status = BL_PROTO_STATUS_OK;

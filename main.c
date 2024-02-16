@@ -84,6 +84,9 @@ int test_fatfs(void)
     return 0;
 }
 
+#include <libopencm3/stm32/rcc.h>
+#include <libopencm3/stm32/gpio.h>
+
 int main(void)
 {
     bl_init();
@@ -91,22 +94,22 @@ int main(void)
     usart_start();
     spi_start();
     if (usbd_start()) {
-        led_blink(LED_ACTIVITY, LED_STATE_RAPID);
-        for (;;);
+       led_blink(LED_AVAILABLE, LED_STATE_RAPID);
+       for (;;);
     }
 
     /* HW initialized */
-    led_on(LED_ACTIVITY);
+    led_on(LED_AVAILABLE);
     bl_dbg("Bootloader started.");
 
 //    test_fatfs();
 
     if (usb_connect()) {
-        led_on(LED_USB);
+        led_on(LED_AVAILABLE);
         bl_dbg("USB connected.");
         bl_listen();
     } else
-        led_off(LED_USB);
+        led_off(LED_AVAILABLE);
 
     bl_dbg("No USB.");
 

@@ -4,8 +4,7 @@
 #define BOARD_LED_ON     gpio_set
 #define BOARD_LED_OFF    gpio_clear
 
-#define LED_ACTIVITY 0
-#define LED_USB      1
+#define LED_AVAILABLE 0
 
 #define LED_STATE_NOBLINK 0
 #define LED_STATE_BLINK   1 << 0

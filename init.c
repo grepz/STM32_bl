@@ -20,23 +20,8 @@ static void __gpio_init(void);
 
 void bl_init(void)
 {
-    struct rcc_clock_scale scale = {
-        .pllm = 4,
-        .plln = 84,
-        .pllp = 2,
-        .pllq = 7,
-        .pllr = 0,
-        .hpre = RCC_CFGR_HPRE_DIV_NONE,
-        .ppre1 = RCC_CFGR_PPRE_DIV_4,
-        .ppre2 = RCC_CFGR_PPRE_DIV_2,
-//        .power_save = 1,
-        .flash_config = FLASH_ACR_ICEN | FLASH_ACR_DCEN | FLASH_ACR_LATENCY_5WS,
-        .apb1_frequency = 168000000ul/4,
-        .apb2_frequency = 168000000ul/2,
-    };
-
     nvic_enable();
-    __clock_setup_hsi(&scale);
+    __clock_setup_hsi(&rcc_hsi_configs[RCC_CLOCK_3V3_96MHZ]);
     rcc_enable();
     __gpio_init();
     timers_init();
@@ -46,10 +31,12 @@ void rcc_enable(void)
 {
     rcc_peripheral_enable_clock(&RCC_APB1ENR, RCC_APB1ENR_SPI2EN);
     rcc_peripheral_enable_clock(&RCC_APB2ENR,
-                                RCC_APB2ENR_SYSCFGEN|RCC_APB2ENR_USART6EN);
+                                RCC_APB2ENR_SYSCFGEN | RCC_APB2ENR_USART6EN);
     rcc_peripheral_enable_clock(&RCC_AHB1ENR,
-                                RCC_AHB1ENR_IOPAEN|RCC_AHB1ENR_IOPBEN|
-                                RCC_AHB1ENR_IOPCEN|RCC_AHB1ENR_IOPDEN);
+                                RCC_AHB1ENR_IOPAEN |
+                                RCC_AHB1ENR_IOPBEN |
+                                RCC_AHB1ENR_IOPCEN |
+                                RCC_AHB1ENR_IOPDEN);
     rcc_peripheral_enable_clock(&RCC_AHB2ENR, RCC_AHB2ENR_OTGFSEN);
     rcc_peripheral_enable_clock(&RCC_AHB1ENR, RCC_AHB1ENR_DMA1EN);
 }
@@ -96,13 +83,13 @@ static void __clock_setup_hsi(const struct rcc_clock_scale *clock)
     rcc_wait_for_sysclk_status(RCC_HSI);
 
 	/* Enable/disable high performance mode */
-    /*
+#if 0
 	if (!clock->power_save) {
 		pwr_set_vos_scale(0);
 	} else {
-    */
-    pwr_set_vos_scale(1);
-    /*}*/
+        pwr_set_vos_scale(1);
+    }
+#endif
 
     rcc_osc_off(RCC_PLL);
     while ((RCC_CR & RCC_CR_PLLRDY) != 0) {
@@ -134,7 +121,7 @@ static void __clock_setup_hsi(const struct rcc_clock_scale *clock)
 static void __gpio_init(void)
 {
     led_gpio_init();
-    usart_gpio_init();
-    spi_gpio_init();
-    usb_gpio_init();
+//    usart_gpio_init();
+//    spi_gpio_init();
+//    usb_gpio_init();
 }
